@@ -1,3 +1,8 @@
+"""
+This module contains utilities to implement highly configurible library code
+where configuration is performed through structs, and smart defaults allow
+sloppy or flat specification of otherwise deeply nested configuration structs.
+"""
 module ConfigTools
 
 export @requiresome, @returnsome
@@ -5,6 +10,14 @@ export find1, find1_instance, find1_type, find1_type_sloppy
 
 using MacroTools
 
+"""
+This macro is passed an assignment like so
+
+    @requiresome foo = bar()
+
+If `bar()` returns `nothing`, then the macro causes the current function to
+return `nothing`. Otherwise, execution continues.
+"""
 macro requiresome(assign)
     @capture(assign, name_ = expr_) || error("@requiresome must be passed an assignment")
     quote
@@ -15,6 +28,14 @@ macro requiresome(assign)
     end
 end
 
+"""
+This macro is passed a value like so
+
+    @returnsome foo()
+
+If `foo()` return any value apart from `nothing`, the macro causes the current
+function to return that value. Otherwise, execution continues.
+"""
 macro returnsome(expr)
     quote
         val = $(esc(expr))

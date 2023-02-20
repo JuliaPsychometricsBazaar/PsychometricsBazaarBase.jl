@@ -15,7 +15,7 @@ The macro `@with_kw` which decorates a type definition to
 allow default values and a keyword constructor:
 
 ```
-julia> using Parameters
+julia> using PsychometricBazzarBase.Parameters
 
 julia> @with_kw struct A
            a::Int = 6
@@ -214,8 +214,8 @@ reconstruction.
 Note: this is not very performant.  Check Setfield.jl for a faster &
 nicer implementation.
 
-```jldoctest
-julia> using Parameters
+```
+julia> using PsychometricBazzarBase.Parameters
 
 julia> struct A
            a

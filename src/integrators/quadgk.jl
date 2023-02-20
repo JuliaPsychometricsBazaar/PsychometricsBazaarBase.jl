@@ -11,6 +11,9 @@ function fixed_gk(f::F, lo, hi, n) where {F}
     (seg.I, seg.E)
 end
 
+"""
+Construct a adaptive Gauss-Kronrod integrator based on `QuadGK.jl` with on a specified interval.
+"""
 struct QuadGKIntegrator <: Integrator
     lo::Float64
     hi::Float64
@@ -20,9 +23,12 @@ end
 # This could be unsafe if quadgk performed i/o. It might be wise to switch to
 # explicitly passing this through from the caller at some point.
 # Just preallocate an arbitrary size for now (easiest, would make more sense to use 'order' somehow but we don't have it)
-# It's 24 * 100 * threads bytes, ~10kb for 4 threads
+# It's 24 * 100 * threads bytes, ~10kb for 4 threads which is unconditionally allocated when this library is used
 segbufs = [Vector{Segment{Float64, Float64, Float64}}(undef, 100) for _ in Threads.nthreads()]
 
+"""
+Perform an adaptive Gauss-Kronrod integration using `QuadGK.jl`.
+"""
 function (integrator::QuadGKIntegrator)(
     f::F,
     ncomp=0,
@@ -37,12 +43,18 @@ function (integrator::QuadGKIntegrator)(
     ErrorIntegrationResult(quadgk(f, lo, hi, rtol=rtol, segbuf=segbufs[Threads.threadid()], order=order)...)
 end
 
+"""
+Construct a fixed-order Gauss-Kronrod integrator based on `QuadGK.jl` with on a specified interval.
+"""
 struct FixedGKIntegrator <: Integrator
     lo::Float64
     hi::Float64
     order::Int
 end
 
+"""
+Perform a fixed-order Gauss-Kronrod integration based on `QuadGK.jl`.
+"""
 function (integrator::FixedGKIntegrator)(
     f::F,
     ncomp=0,
@@ -56,6 +68,9 @@ function (integrator::FixedGKIntegrator)(
     ErrorIntegrationResult(fixed_gk(f, lo, hi, order)...)
 end
 
+"""
+Construct a fixed-order multi-dimensional Gauss-Kronrod integrator based on `QuadGK.jl` with on a specified interval.
+"""
 struct MultiDimFixedGKIntegrator{OrderT <: AbstractVector{Int}} <: Integrator
     lo::Vector{Float64}
     hi::Vector{Float64}
@@ -70,6 +85,9 @@ function MultiDimFixedGKIntegrator(lo, hi, order::Int)
     MultiDimFixedGKIntegrator(lo, hi, Fill(order, length(lo)))
 end
 
+"""
+Perform a fixed-order multi-dimensional Gauss-Kronrod integrator based on `QuadGK.jl`.
+"""
 function (integrator::MultiDimFixedGKIntegrator)(
     f::F,
     ncomp=1,

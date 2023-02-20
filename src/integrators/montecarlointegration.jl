@@ -1,5 +1,8 @@
 using MonteCarloIntegration
 
+"""
+Construct a VEGAS integrator based on `MonteCarloIntegration.jl` with on a specified interval.
+"""
 struct MCIVegasIntegrator <: Integrator
     lo::Vector{Float64}
     hi::Vector{Float64}
@@ -10,6 +13,9 @@ function MCIVegasIntegrator(lo, hi)
     MCIVegasIntegrator(lo, hi, ())
 end
 
+"""
+Perform a VEGAS integration based on `MonteCarloIntegration.jl`.
+"""
 function (integrator::MCIVegasIntegrator)(
     f::F;
     ncomp=1,

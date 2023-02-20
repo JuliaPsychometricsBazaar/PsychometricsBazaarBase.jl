@@ -10,9 +10,10 @@ into more specific packages (including existing packages) over time.
 CurrentModule = PsychometricsBazzarBase
 ```
 
-```@index
+```@autodocs
+Modules = [PsychometricsBazzarBase]
 ```
 
-```@autodocs
-Modules = [PsychometricsBazzarBase, PsychometricsBazzarBase.ConfigTools, PsychometricsBazzarBase.ExtraDistributions, PsychometricsBazzarBase.IntegralCoeffs, PsychometricsBazzarBase.Interpolators, PsychometricsBazzarBase.Optimizers]
+## Index
+```@index
 ```

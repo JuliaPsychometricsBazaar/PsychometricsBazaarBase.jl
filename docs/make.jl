@@ -13,7 +13,12 @@ makedocs(;
     sitename="PsychometricsBazzarBase.jl",
     format=format,
     pages=[
-        "Getting started" => "index.md",
+        "PsychometricsBazzarBase.jl" => "index.md",
+        "Integrators" => "integrators.md",
+        "Optimizers" => "optimizers.md",
+        "ConfigTools" => "config_tools.md",
+        "IntegralCoeffs" => "integral_coeffs.md",
+        "ExtraDistributions" => "extra_distributions.md",
     ],
 )
 

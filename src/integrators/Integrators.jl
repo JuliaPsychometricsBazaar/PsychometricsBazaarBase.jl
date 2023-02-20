@@ -1,5 +1,5 @@
 """
-This module provides a common interface to different integration techniques.
+This module provides a common interface to different numerical integration techniques.
 """
 module Integrators
 
@@ -77,18 +77,35 @@ function mirtcat_quadpnts(nd)
     end
 end
 
+"""
+The result of an integration technique which provides no error value.
+"""
 struct BareIntegrationResult{VecT}
     vec::VecT
 end
 
+"""
+The result of an integration technique which provides an error value. Note that
+error values are not comparible between different integration techniques in
+general.
+"""
 struct ErrorIntegrationResult{VecT, ErrT}
     vec::VecT
     err::ErrT
 end
 
+"""
+Given any integration result, get the integral value.
+"""
 function intval(res::Union{BareIntegrationResult, ErrorIntegrationResult})
     res.vec
 end
+
+"""
+Given any integration result, get the integral error. In case the integration
+technique does not supply one, this returns `nothing`.
+"""
+function interr end
 
 function interr(::BareIntegrationResult)
     nothing

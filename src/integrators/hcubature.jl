@@ -1,5 +1,8 @@
 import HCubature
 
+"""
+Construct a Cubature integrator based on `HCubature.jl` with on a specified interval.
+"""
 struct HCubatureIntegrator{KwargsT} <: Integrator
     lo::Vector{Float64}
     hi::Vector{Float64}
@@ -10,6 +13,9 @@ function HCubatureIntegrator(lo, hi; kwargs...)
     HCubatureIntegrator(lo, hi, kwargs)
 end
 
+"""
+Perform Cubature integration based on `HCubature.jl`.
+"""
 function (integrator::HCubatureIntegrator)(
     f::F;
     ncomp=1,
