@@ -1,5 +1,6 @@
 """
-This module provides a common interface to different numerical optimization techniques.
+This module provides a common interface to different numerical optimization
+techniques.
 """
 module Optimizers
 
@@ -58,12 +59,18 @@ using ..ConfigTools
 using ..Parameters
 
 using Optim
+using DocStringExtensions
 
 abstract type Optimizer end
 function Optimizer(bits...)
     @returnsome find1_instance(Optimizer, bits)
 end
 
+"""
+Wraps an Optim.jl optimizer to optimize a single-dimensional domain function.
+
+$(SIGNATURES)
+"""
 struct OneDimOptimOptimizer{OptimT <: Optim.AbstractOptimizer} <: Optimizer
     lo::Float64
     hi::Float64
@@ -94,6 +101,11 @@ function(opt::OneDimOptimOptimizer)(
     ))[1]
 end
 
+"""
+Wraps an Optim.jl optimizer to optimize a multi-dimensional domain function.
+
+$(SIGNATURES)
+"""
 struct MultiDimOptimOptimizer{OptimT <: Optim.AbstractOptimizer} <: Optimizer
     lo::Vector{Float64}
     hi::Vector{Float64}

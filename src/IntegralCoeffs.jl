@@ -9,15 +9,25 @@ level of specialization.
 module IntegralCoeffs
 
 using Distributions: Distribution, pdf
+using DocStringExtensions
 
+"""
+$(SIGNATURES)
+"""
 @inline function one(x_)::Float64
     1.0
 end
 
+"""
+$(SIGNATURES)
+"""
 @inline function id(x::T)::T where {T}
     x
 end
 
+"""
+$(SIGNATURES)
+"""
 struct SqDev{CenterT}
     center::CenterT
 end
@@ -30,6 +40,9 @@ struct Prior{Dist <: Distribution}
     dist::Dist
 end
 
+"""
+$(SIGNATURES)
+"""
 struct PriorApply{Dist, F}
     prior::Prior{Dist}
     func::F

@@ -474,7 +474,7 @@ deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.PsychometricsBazzarBase]]
-deps = ["Cuba", "Cubature", "Distributions", "FillArrays", "HCubature", "Interpolations", "Lazy", "LinearAlgebra", "MacroTools", "Measurements", "MonteCarloIntegration", "NLSolversBase", "Optim", "OrderedCollections", "QuadGK", "Random", "UnPack"]
+deps = ["Cuba", "Cubature", "Distributions", "DocStringExtensions", "FillArrays", "HCubature", "Interpolations", "Lazy", "LinearAlgebra", "MacroTools", "Measurements", "MonteCarloIntegration", "NLSolversBase", "Optim", "OrderedCollections", "QuadGK", "Random", "UnPack"]
 path = ".."
 uuid = "8a5e4057-03e0-4a42-ba57-0eb88ce604f5"
 version = "0.1.0"

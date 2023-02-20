@@ -9,8 +9,11 @@ export @requiresome, @returnsome
 export find1, find1_instance, find1_type, find1_type_sloppy
 
 using MacroTools
+using DocStringExtensions
 
 """
+$(SIGNATURES)
+
 This macro is passed an assignment like so
 
     @requiresome foo = bar()
@@ -29,7 +32,9 @@ macro requiresome(assign)
 end
 
 """
-This macro is passed a value like so
+$(SIGNATURES)
+
+This macro is passed an expression like so
 
     @returnsome foo()
 
@@ -45,6 +50,19 @@ macro returnsome(expr)
     end
 end
 
+"""
+$(SIGNATURES)
+
+This macro is passed an expression and a function like so
+
+    @returnsome foo() do x
+        bar(x)
+    end
+
+If `foo()` return any value apart from `nothing`, the macro executes the
+function and returns the value as long as it is not `nothing`. In all other
+cases, execution continues.
+"""
 macro returnsome(expr, func)
     quote
         val = $(esc(expr))
@@ -57,6 +75,13 @@ macro returnsome(expr, func)
     end
 end
 
+"""
+$(SIGNATURES)
+
+Given an iterable `iter` and a predicate `pred`, this function returns a match
+or else `nothing` if no match. In case there are multiple matches, an error is
+thrown.
+"""
 function find1(pred::F, iter, fail_msg) where {F}
     res = nothing
     cnt = 0
@@ -72,6 +97,12 @@ function find1(pred::F, iter, fail_msg) where {F}
     res
 end
 
+"""
+$(SIGNATURES)
+
+Returns exactly one instance in `iter` of type `type` or else `nothing``. In
+case there are multiple matches, an error is thrown.
+"""
 function find1_instance(type, iter)
     find1(
         x -> isa(x, type),
@@ -80,6 +111,12 @@ function find1_instance(type, iter)
     )
 end
 
+"""
+$(SIGNATURES)
+
+Returns exactly one type in `iter` of which is a subtype of `type` or else
+`nothing``.  In case there are multiple matches, an error is thrown.
+"""
 function find1_type(type, iter)
     find1(
         x -> isa(x, DataType) && x <: Type,
@@ -88,6 +125,13 @@ function find1_type(type, iter)
     )
 end
 
+"""
+$(SIGNATURES)
+
+Returns exactly one type in `iter` of which is either a subtype of `type` or an
+instance of `type` or else `nothing``.  In case there are multiple matches, an
+error is thrown.
+"""
 function find1_type_sloppy(type, iter)
     @returnsome find1_type(type, iter)
     @returnsome find1_instance(type, iter) inst -> typeof(inst)

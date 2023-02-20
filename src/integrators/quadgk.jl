@@ -13,6 +13,8 @@ end
 
 """
 Construct a adaptive Gauss-Kronrod integrator based on `QuadGK.jl` with on a specified interval.
+
+$(TYPEDFIELDS)
 """
 struct QuadGKIntegrator <: Integrator
     lo::Float64
@@ -27,6 +29,8 @@ end
 segbufs = [Vector{Segment{Float64, Float64, Float64}}(undef, 100) for _ in Threads.nthreads()]
 
 """
+    (integrator::QuadGKIntegrator)(f[, ncomp, lo, hi; order=..., rtol=...])
+
 Perform an adaptive Gauss-Kronrod integration using `QuadGK.jl`.
 """
 function (integrator::QuadGKIntegrator)(
@@ -45,6 +49,8 @@ end
 
 """
 Construct a fixed-order Gauss-Kronrod integrator based on `QuadGK.jl` with on a specified interval.
+
+$(TYPEDFIELDS)
 """
 struct FixedGKIntegrator <: Integrator
     lo::Float64
@@ -53,6 +59,8 @@ struct FixedGKIntegrator <: Integrator
 end
 
 """
+    (integrator::QuadGKIntegrator)(f[, ncomp, lo, hi; order=...])
+
 Perform a fixed-order Gauss-Kronrod integration based on `QuadGK.jl`.
 """
 function (integrator::FixedGKIntegrator)(
@@ -69,7 +77,10 @@ function (integrator::FixedGKIntegrator)(
 end
 
 """
-Construct a fixed-order multi-dimensional Gauss-Kronrod integrator based on `QuadGK.jl` with on a specified interval.
+Construct a fixed-order multi-dimensional Gauss-Kronrod integrator based on
+`QuadGK.jl` with on a specified interval.
+
+$(TYPEDFIELDS)
 """
 struct MultiDimFixedGKIntegrator{OrderT <: AbstractVector{Int}} <: Integrator
     lo::Vector{Float64}
@@ -86,6 +97,8 @@ function MultiDimFixedGKIntegrator(lo, hi, order::Int)
 end
 
 """
+    (integrator::QuadGKIntegrator)(f[, ncomp, lo, hi; order=...])
+
 Perform a fixed-order multi-dimensional Gauss-Kronrod integrator based on `QuadGK.jl`.
 """
 function (integrator::MultiDimFixedGKIntegrator)(

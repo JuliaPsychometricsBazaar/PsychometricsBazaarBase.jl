@@ -13,6 +13,7 @@ export CubaIntegrator, CubaVegas, CubaSuave, CubaDivonne, CubaCuhre
 using ..ConfigTools
 using ..IntegralCoeffs: one
 import Measurements
+using DocStringExtensions
 
 abstract type Integrator end
 function Integrator(bits...)
@@ -80,6 +81,8 @@ end
 
 """
 The result of an integration technique which provides no error value.
+
+$(TYPEDFIELDS)
 """
 struct BareIntegrationResult{VecT}
     vec::VecT
@@ -89,6 +92,8 @@ end
 The result of an integration technique which provides an error value. Note that
 error values are not comparible between different integration techniques in
 general.
+
+$(TYPEDFIELDS)
 """
 struct ErrorIntegrationResult{VecT, ErrT}
     vec::VecT
@@ -97,6 +102,8 @@ end
 
 """
 Given any integration result, get the integral value.
+
+$(SIGNATURES)
 """
 function intval(res::Union{BareIntegrationResult, ErrorIntegrationResult})
     res.vec
@@ -105,6 +112,8 @@ end
 """
 Given any integration result, get the integral error. In case the integration
 technique does not supply one, this returns `nothing`.
+
+$(SIGNATURES)
 """
 function interr end
 

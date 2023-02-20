@@ -1,5 +1,7 @@
 module PsychometricsBazzarBase
 
+using DocStringExtensions
+
 include("./vendor/Parameters.jl")
 include("./ConfigTools.jl")
 include("./IntegralCoeffs.jl")

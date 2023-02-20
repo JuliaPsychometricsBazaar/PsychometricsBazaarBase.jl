@@ -3,23 +3,34 @@ using Cuba
 abstract type CubaAlgorithm end
 """
 The VEGAS algorithm.
+
+$(TYPEDEF)
 """
 struct CubaVegas <: CubaAlgorithm end
 """
 The Sauve algorithm.
+
+$(TYPEDEF)
 """
 struct CubaSuave <: CubaAlgorithm end
 """
 The Divonne algorithm.
+
+$(TYPEDEF)
 """
 struct CubaDivonne <: CubaAlgorithm end
 """
 The Cuhre algorithm.
+
+$(TYPEDEF)
 """
 struct CubaCuhre <: CubaAlgorithm end
 
 """
 CubaIntegrator is a wrapper around the Cuba.jl integration functions.
+
+$(TYPEDEF)
+$(TYPEDFIELDS)
 
 Usage example:
 
@@ -27,7 +38,7 @@ Usage example:
 CubaIntegrator([0.0, 0.0], [1.0, 1.0], CubaVegas()) do x
     x[1] * x[2]
 end
-````
+```
 """
 struct CubaIntegrator{AlgorithmT <: CubaAlgorithm, KwargsT} <: Integrator
     lo::Vector{Float64}
@@ -67,6 +78,8 @@ function (wrapper::PreallocatedOutputWrapper)(x, r)
 end
 
 """
+    (integrator::CubaIntegrator)(f[, ncomp, lo, hi; kwargs...])
+
 Perform a Cuba integration.
 """
 function (integrator::CubaIntegrator)(
