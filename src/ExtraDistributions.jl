@@ -5,10 +5,12 @@ limited to `NormalScaledLogistic`.
 module ExtraDistributions
 
 using Random: AbstractRNG
-using Distributions: Logistic, UnivariateDistribution, Normal, MvNormal, Zeros, ScalMat
+using Distributions: Logistic, ContinuousUnivariateDistribution, Normal, MvNormal, Zeros, ScalMat
 
 using Lazy: @forward
 using DocStringExtensions
+
+export NormalScaledLogistic
 
 # This seems to be the most commonly found exact value in the wild, see e.g. the
 # R package `mirt``
@@ -19,7 +21,7 @@ The normal scaled logistic distribution is an approximation to the normal
 distribution based upon the logistic distribution. It has been commonly used in
 IRT modelling, such as in the `mirt` package for R.
 """
-struct NormalScaledLogistic
+struct NormalScaledLogistic <: ContinuousUnivariateDistribution
     inner::Logistic
     """
     $(SIGNATURES)
