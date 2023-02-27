@@ -4,7 +4,6 @@ limited to `NormalScaledLogistic`.
 """
 module ExtraDistributions
 
-using Random: AbstractRNG
 using Distributions: Logistic, ContinuousUnivariateDistribution, Normal, MvNormal, Zeros, ScalMat
 
 using Lazy: @forward
