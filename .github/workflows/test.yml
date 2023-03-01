@@ -41,3 +41,10 @@ jobs:
       - name: Run tests
         run: |
           cd test && julia --project=. ./runtests.jl
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: test-results
+          path: test-results.xml
+          reporter: java-junit
