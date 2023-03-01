@@ -17,7 +17,7 @@ Modules = [PsychometricsBazzarBase]
 ## Contents
 
 ```@contents
-Pages = ["integrators.md", "optimizers.md", "config_tools.md", "integral_coeffs.md", "extra_distributions.md"]
+Pages = ["integrators.md", "optimizers.md", "config_tools.md", "integral_coeffs.md", "const_distributions.md"]
 Depth = 1
 ```
 

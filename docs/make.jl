@@ -14,7 +14,7 @@ makedocs(;
     format=format,
     pages=[
         "Home" => "index.md",
-        "Modules" => ["integrators.md", "optimizers.md", "config_tools.md", "integral_coeffs.md", "extra_distributions.md"]
+        "Modules" => ["integrators.md", "optimizers.md", "config_tools.md", "integral_coeffs.md", "const_distributions.md"]
     ],
 )
 
