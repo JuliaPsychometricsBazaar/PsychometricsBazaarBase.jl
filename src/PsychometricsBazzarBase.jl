@@ -6,7 +6,7 @@ include("./vendor/Parameters.jl")
 include("./ConfigTools.jl")
 include("./IntegralCoeffs.jl")
 include("./integrators/Integrators.jl")
-include("./ExtraDistributions.jl")
+include("./ConstDistributions.jl")
 include("./Interpolators.jl")
 include("./Optimizers.jl")
 
