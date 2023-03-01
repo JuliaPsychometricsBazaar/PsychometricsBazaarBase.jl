@@ -1,9 +1,12 @@
-using Test
+using XUnit
 
-@testset "Aqua automated quality checks" begin
-    include("./aqua.jl")
-end
 
-@testset "Smoke tests" begin
-    include("./smoke.jl")
+@testset runner=ParallelTestRunner() xml_report=true "top" begin
+    @testset "aqua" begin
+        include("./aqua.jl")
+    end
+
+    @testset "smoke" begin
+	include("./smoke.jl")
+    end
 end
