@@ -1,6 +1,6 @@
 ## PsychometricsBazzarBase.jl
 
-This module provides a base for the libraries in the JuliaPsychometricsBazzar
+This module provides a base for the libraries in the JuliaPsychometricsBazaar
 org. It contains abstractions over basic mathematical techniques such as
 numerical integration, optimization and interpolation.
 
