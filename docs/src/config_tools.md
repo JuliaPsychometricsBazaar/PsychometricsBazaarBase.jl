@@ -1,7 +1,7 @@
 # ConfigTools
 
 ```@autodocs
-Modules = [PsychometricsBazzarBase.ConfigTools]
+Modules = [PsychometricsBazaarBase.ConfigTools]
 ```
 
 ## Index

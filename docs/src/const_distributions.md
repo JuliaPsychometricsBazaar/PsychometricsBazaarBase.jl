@@ -1,7 +1,7 @@
 # ConstDistributions
 
 ```@autodocs
-Modules = [PsychometricsBazzarBase.ConstDistributions]
+Modules = [PsychometricsBazaarBase.ConstDistributions]
 ```
 
 ## Index

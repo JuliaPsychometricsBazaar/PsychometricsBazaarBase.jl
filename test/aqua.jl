@@ -1,5 +1,5 @@
 using Aqua
-using PsychometricsBazzarBase
+using PsychometricsBazaarBase
 
-Aqua.test_all(PsychometricsBazzarBase, ambiguities=false)
-Aqua.test_ambiguities([PsychometricsBazzarBase])
+Aqua.test_all(PsychometricsBazaarBase, ambiguities=false)
+Aqua.test_ambiguities([PsychometricsBazaarBase])

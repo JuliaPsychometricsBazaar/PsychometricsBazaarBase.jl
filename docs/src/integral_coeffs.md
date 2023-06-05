@@ -1,7 +1,7 @@
 # IntegralCoeffs
 
 ```@autodocs
-Modules = [PsychometricsBazzarBase.IntegralCoeffs]
+Modules = [PsychometricsBazaarBase.IntegralCoeffs]
 ```
 
 ## Index

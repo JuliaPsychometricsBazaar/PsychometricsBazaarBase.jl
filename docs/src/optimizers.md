@@ -1,7 +1,7 @@
 # Optimizers
 
 ```@autodocs
-Modules = [PsychometricsBazzarBase.Optimizers]
+Modules = [PsychometricsBazaarBase.Optimizers]
 ```
 
 ## Index

@@ -1,4 +1,4 @@
-module PsychometricsBazzarBase
+module PsychometricsBazaarBase
 
 using DocStringExtensions
 

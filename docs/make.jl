@@ -1,16 +1,16 @@
-using PsychometricsBazzarBase
+using PsychometricsBazaarBase
 using Documenter
 
 format = Documenter.HTML(
     prettyurls=get(ENV, "CI", "false") == "true",
-    canonical="https://JuliaPsychometricsBazzar.github.io/PsychometricsBazzarBase.jl",
+    canonical="https://JuliaPsychometricsBazaar.github.io/PsychometricsBazaarBase.jl",
 )
 
 makedocs(;
-    modules=[PsychometricsBazzarBase],
+    modules=[PsychometricsBazaarBase],
     authors="Frankie Robertson",
-    repo="https://github.com/JuliaPsychometricsBazzar/PsychometricsBazzarBase.jl/blob/{commit}{path}#{line}",
-    sitename="PsychometricsBazzarBase.jl",
+    repo="https://github.com/JuliaPsychometricsBazaar/PsychometricsBazaarBase.jl/blob/{commit}{path}#{line}",
+    sitename="PsychometricsBazaarBase.jl",
     format=format,
     pages=[
         "Home" => "index.md",
@@ -19,6 +19,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/JuliaPsychometricsBazzar/PsychometricsBazzarBase.jl",
+    repo="github.com/JuliaPsychometricsBazaar/PsychometricsBazaarBase.jl",
     devbranch="main",
 )

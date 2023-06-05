@@ -1,7 +1,7 @@
 # Integrators
 
 ```@autodocs
-Modules = [PsychometricsBazzarBase.Integrators]
+Modules = [PsychometricsBazaarBase.Integrators]
 ```
 
 ## Index

@@ -1,5 +1,5 @@
-using PsychometricsBazzarBase.Integrators
-using PsychometricsBazzarBase.Optimizers
+using PsychometricsBazaarBase.Integrators
+using PsychometricsBazaarBase.Optimizers
 using Optim
 
 
