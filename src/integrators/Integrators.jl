@@ -131,7 +131,7 @@ function interr(res::ErrorIntegrationResult)
 end
 
 function intmes(res::ErrorIntegrationResult)
-    Measurements.measurement(intval(res), interr(res))
+    Measurements.measurement.(intval(res), interr(res))
 end
 
 include("./quadgk.jl")
