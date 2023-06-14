@@ -23,6 +23,7 @@ end
 abstract type IntReturnType end
 struct IntValue <: IntReturnType end
 struct IntMeasurement <: IntReturnType end
+struct IntPassthrough <: IntReturnType end
 
 function (::IntValue)(res)
     intval(res)
@@ -30,6 +31,10 @@ end
 
 function (::IntMeasurement)(res)
     intmes(res)
+end
+
+function (::IntPassthrough)(res)
+    res
 end
 
 function normdenom(integrator::Integrator; options...)
