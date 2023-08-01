@@ -118,8 +118,8 @@ Returns exactly one type in `iter` of which is a subtype of `type` or else
 `nothing``.  In case there are multiple matches, an error is thrown.
 """
 function find1_type(type, iter)
-    find1(
-        x -> isa(x, DataType) && x <: Type,
+    return find1(
+        x -> (((x isa DataType) || (x isa UnionAll)) && x <: type),
         iter,
         "Expected exactly one type " * repr(type)
     )
