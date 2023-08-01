@@ -94,7 +94,7 @@ function find1(pred::F, iter, fail_msg) where {F}
     if cnt > 1
         error(fail_msg)
     end
-    res
+    return res
 end
 
 """
