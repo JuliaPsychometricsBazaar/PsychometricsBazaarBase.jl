@@ -40,5 +40,6 @@ jobs:
                                     Pkg.instantiate()'
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
+        allow-failure: ${{ matrix.version == 'nightly' }}
         run: |
           cd test && julia --project=. ./runtests.jl
