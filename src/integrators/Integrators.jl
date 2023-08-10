@@ -9,6 +9,7 @@ export normdenom, intval, interr
 export CubaVegas, CubaSuave, CubaDivonne, CubaCuhre
 export IntReturnType, IntValue, IntMeasurement
 export CubaIntegrator, CubaVegas, CubaSuave, CubaDivonne, CubaCuhre
+export FixedGridIntegrator, even_grid, quasimontecarlo_grid
 
 using ..ConfigTools
 using ..IntegralCoeffs: one
@@ -139,5 +140,6 @@ include("./hcubature.jl")
 include("./montecarlointegration.jl")
 include("./cubature.jl")
 include("./cuba.jl")
+include("./fixed.jl")
 
 end
