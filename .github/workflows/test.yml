@@ -40,6 +40,20 @@ jobs:
                                     Pkg.instantiate()'
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
-        allow-failure: ${{ matrix.version == 'nightly' }}
         run: |
-          cd test && julia --project=. ./runtests.jl
+          set +e
+          set +o pipefail
+
+          function wrap() {
+            cd test && julia --project=. ./runtests.jl
+            return $?
+          }
+
+          wrap
+          if [[ "${{ matrix.version }}" == "nightly" ]]
+          then
+            echo $?
+            exit 0
+          else
+            exit $?
+          end
