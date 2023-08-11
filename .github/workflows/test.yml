@@ -56,4 +56,4 @@ jobs:
             exit 0
           else
             exit $?
-          end
+          fi
