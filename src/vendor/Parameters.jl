@@ -293,6 +293,8 @@ function _pack_new(T, fields)
     Expr(:call, T, fields...)
 end
 
+struct __Private end
+
 """
 This function is called by the `@with_kw` macro and does the syntax
 transformation from:
@@ -500,9 +502,9 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     else
         if length(typparas)>0
             tps = stripsubtypes(typparas)
-            innerc = :( $tn{$(tps...)}($kwargs) where {$(tps...)} = new{$(tps...)}($(args...)))
+            innerc = :( $tn{$(tps...)}($kwargs) where {$(tps...)} = $tn{$(tps...)}(Parameters.__Private(), $(args...)))
         else
-            innerc = :($tn($kwargs) = new($(args...)) )
+            innerc = :($tn($kwargs) = $tn(Parameters.__Private(), $(args...)) )
         end
     end
     push!(typ.args[3].args, innerc)
@@ -510,12 +512,21 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # Inner positional constructor: only make it if no inner
     # constructors are user-defined.  If one or several are defined,
     # assume that one has the standard positional signature.
-    if length(inner_constructors)==0 && allow_default
-        if length(typparas)>0
-            tps = stripsubtypes(typparas)
-            innerc2 = :( $tn{$(tps...)}($(args...)) where {$(tps...)} = new{$(tps...)}($(args...)) )
+    if length(inner_constructors)==0 || !allow_default
+        if allow_default
+            if length(typparas)>0
+                tps = stripsubtypes(typparas)
+                innerc2 = :( $tn{$(tps...)}($(args...)) where {$(tps...)} = new{$(tps...)}($(args...)) )
+            else
+                innerc2 = :($tn($(args...)) = new($(args...)))
+            end
         else
-            innerc2 = :($tn($(args...)) = new($(args...)))
+            if length(typparas)>0
+                tps = stripsubtypes(typparas)
+                innerc2 = :( $tn{$(tps...)}(::Parameters.__Private, $(args...)) where {$(tps...)} = new{$(tps...)}($(args...)) )
+            else
+                innerc2 = :($tn(::Parameters.__Private, $(args...)) = new($(args...)))
+            end
         end
         prepend!(innerc2.args[2].args, asserts)
         push!(typ.args[3].args, innerc2)
@@ -535,8 +546,13 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     if typparas!=Any[] # condition (1)
         # fields definitions stripped of ::Int etc., only keep ::T if T∈typparas :
         fielddef_strip_contT = keep_only_typparas(fielddefs.args, typparas)
-        outer_positional = :(  $tn($(fielddef_strip_contT...)) where {$(typparas...)}
-                             = $tn{$(stripsubtypes(typparas)...)}($(args...)))
+        if allow_default
+            outer_positional = :(  $tn($(fielddef_strip_contT...)) where {$(typparas...)}
+                                 = $tn{$(stripsubtypes(typparas)...)}($(args...)))
+        else
+            outer_positional = :(  $tn(private::Parameters.__Private, $(fielddef_strip_contT...)) where {$(typparas...)}
+                                 = $tn{$(stripsubtypes(typparas)...)}(private, $(args...)))
+        end
         # Check condition (2)
         checks = true
         for tp in stripsubtypes(typparas)
@@ -555,7 +571,11 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     if typparas==Any[]
         outer_kw=:()
     else
-        outer_kw = :($tn($kwargs) = $tn($(args...)) )
+        if allow_default
+            outer_kw = :($tn($kwargs) = $tn($(args...)) )
+        else
+            outer_kw = :($tn($kwargs) = $tn(Parameters.__Private(), $(args...)) )
+        end
     end
     # NOTE: The reason to have both outer and inner keyword
     # constructors are to allow both calls:
