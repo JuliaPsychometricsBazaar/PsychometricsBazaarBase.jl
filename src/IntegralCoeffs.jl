@@ -32,7 +32,7 @@ struct SqDev{CenterT}
     center::CenterT
 end
 
-@inline function (sq_dev::SqDev)(x)
+@inline function (sq_dev::SqDev{CenterT})(x::CenterT)::CenterT where {CenterT}
     (x .- sq_dev.center) .^ 2
 end
 
