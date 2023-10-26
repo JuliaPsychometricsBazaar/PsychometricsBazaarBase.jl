@@ -10,11 +10,8 @@ function quasimontecarlo_grid(theta_lo, theta_hi, quadpts, sampler)
     FixedGridIntegrator(QuasiMonteCarlo.sample(quadpts, theta_lo, theta_hi, sampler))
 end
 
-function (integrator::FixedGridIntegrator)(
-    f::F,
-    ncomp=0
-) where F
-    preallocate(integrator)(f, ncomp)
+function (integrator::FixedGridIntegrator)(args...; kwargs...) where F
+    preallocate(integrator)(args...; kwargs...)
 end
 
 struct PreallocatedFixedGridIntegrator <: Integrator
@@ -26,12 +23,25 @@ end
 
 function (integrator::PreallocatedFixedGridIntegrator)(
     f::F,
-    ncomp=0
+    ncomp::Int=0
 ) where F
     if ncomp != 0
         error("FixedGridIntegrator only supports ncomp == 0")
     end
     integrator.buf .= f.(integrator.inner.grid)
+    BareIntegrationResult(sum(integrator.buf))
+end
+
+function (integrator::PreallocatedFixedGridIntegrator)(
+    f::F,
+    init::AbstractVector{Float64},
+    ncomp::Int=0
+) where F
+    if ncomp != 0
+        error("FixedGridIntegrator only supports ncomp == 0")
+    end
+    integrator.buf .= init
+    integrator.buf .= f.(integrator.buf, integrator.inner.grid)
     BareIntegrationResult(sum(integrator.buf))
 end
 
@@ -41,4 +51,22 @@ end
 
 function preallocate(integrator::Integrator)
     integrator
+end
+
+struct IterativeFixedGridIntegrator <: Integrator
+    grid::Vector{Float64}
+end
+
+function (integrator::IterativeFixedGridIntegrator)(
+    f::F,
+    ncomp=0
+) where F
+    if ncomp != 0
+        error("IterativeFixedGridIntegrator only supports ncomp == 0")
+    end
+    s = 0.0
+    for x in integrator.grid
+        s += f(x)
+    end
+    BareIntegrationResult(s)
 end
