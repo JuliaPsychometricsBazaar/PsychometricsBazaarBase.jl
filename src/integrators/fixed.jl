@@ -10,7 +10,7 @@ function quasimontecarlo_grid(theta_lo, theta_hi, quadpts, sampler)
     FixedGridIntegrator(QuasiMonteCarlo.sample(quadpts, theta_lo, theta_hi, sampler))
 end
 
-function (integrator::FixedGridIntegrator)(args...; kwargs...) where F
+function (integrator::FixedGridIntegrator)(args...; kwargs...)
     preallocate(integrator)(args...; kwargs...)
 end
 
