@@ -137,7 +137,6 @@ end
 
 include("./quadgk.jl")
 include("./hcubature.jl")
-include("./montecarlointegration.jl")
 include("./cubature.jl")
 include("./cuba.jl")
 include("./fixed.jl")
