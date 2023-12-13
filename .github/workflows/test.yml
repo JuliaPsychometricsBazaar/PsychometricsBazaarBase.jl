@@ -32,28 +32,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
-      - name: Set resolve env
-        run: |
-          julia --project=test/ -e 'using Pkg;
-                                    Pkg.develop(path=".");
-                                    Pkg.resolve();
-                                    Pkg.instantiate()'
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
-        run: |
-          set +e
-          set +o pipefail
-
-          function wrap() {
-            cd test && julia --project=. ./runtests.jl
-            return $?
-          }
-
-          wrap
-          if [[ "${{ matrix.version }}" == "nightly" ]]
-          then
-            echo $?
-            exit 0
-          else
-            exit $?
-          fi
+        run: julia --project=. -e 'using Pkg; Pkg.test()'
