@@ -16,6 +16,7 @@ makedocs(;
         "Home" => "index.md",
         "Modules" => ["integrators.md", "optimizers.md", "config_tools.md", "integral_coeffs.md", "const_distributions.md"]
     ],
+    warnonly = [:missing_docs],
 )
 
 deploydocs(;
