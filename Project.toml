@@ -22,7 +22,12 @@ QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 QuasiMonteCarlo = "8a4e6c94-4038-4cdc-81c3-7e6ffdb2a71b"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
+[extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+XUnit = "3e3c03f2-1a94-11e9-2981-050a4ca824ab"
+
 [compat]
+Aqua = "0.8"
 Cuba = "2"
 Cubature = "1"
 Distributions = "0.25"
@@ -39,4 +44,8 @@ OrderedCollections = "1"
 QuadGK = "2.5.0"
 QuasiMonteCarlo = "0.3.3"
 UnPack = "1"
+XUnit = "1"
 julia = "^1.8"
+
+[targets]
+test = ["Aqua", "XUnit"]
