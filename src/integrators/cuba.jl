@@ -83,12 +83,12 @@ end
 Perform a Cuba integration.
 """
 function (integrator::CubaIntegrator)(
-    f::F,
-    ncomp=0,
-    lo=integrator.lo,
-    hi=integrator.hi;
-    kwargs...
-) where F
+        f::F,
+        ncomp = 0,
+        lo = integrator.lo,
+        hi = integrator.hi;
+        kwargs...
+) where {F}
     # TODO: Move ScaleUnitDomain to CubaIntegrator init
     res = get_cuba_integration_func(integrator.algorithm)(
         PreallocatedOutputWrapper(ScaleUnitDomain(f, lo, hi)),

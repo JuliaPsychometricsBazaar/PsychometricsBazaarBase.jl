@@ -60,26 +60,26 @@ struct Lines
 end
 start(lns::Lines) = 1
 function next(lns::Lines, nr)
-    for i=nr:length(lns.block.args)
+    for i in nr:length(lns.block.args)
         if lns.block.args[i] isa LineNumberNode
             continue
         end
-        if ( lns.block.args[i] isa Symbol
-             || lns.block.args[i] isa String # doc-string
-             || !(lns.block.args[i].head==:line))
-            return lns.block.args[i], i+1
+        if (lns.block.args[i] isa Symbol
+            || lns.block.args[i] isa String # doc-string
+            || !(lns.block.args[i].head == :line))
+            return lns.block.args[i], i + 1
         end
     end
     return -1
 end
 function done(lns::Lines, nr)
-    if next(lns::Lines, nr)==-1
+    if next(lns::Lines, nr) == -1
         true
     else
         false
     end
 end
-function Base.iterate(lns::Lines, nr=start(lns))
+function Base.iterate(lns::Lines, nr = start(lns))
     nr = next(lns, nr)
     return nr == -1 ? nothing : nr
 end
@@ -87,23 +87,23 @@ end
 # This is not O(1) but hey...
 function Base.setindex!(lns::Lines, val, ind)
     ii = 1
-    for i=1:length(lns.block.args)
+    for i in 1:length(lns.block.args)
         if lns.block.args[i] isa LineNumberNode
             continue
         end
-        if lns.block.args[i] isa Symbol || !(lns.block.args[i].head==:line)
-            if ind==ii
+        if lns.block.args[i] isa Symbol || !(lns.block.args[i].head == :line)
+            if ind == ii
                 lns.block.args[i] = val
                 return nothing
             end
-            ii +=1
+            ii += 1
         end
     end
     throw(BoundsError("Attempted to set line $ind of $(ii-1) length code-block"))
 end
 
 # Transforms :(a::b) -> :a
-decolon2(a::Expr) = (@assert a.head==:(::);  a.args[1])
+decolon2(a::Expr) = (@assert a.head == :(::); a.args[1])
 decolon2(a::Symbol) = a
 
 # Keep the ::T of the args if T ∈ typparas,
@@ -112,12 +112,12 @@ function keep_only_typparas(args, typparas)
     args = copy(args)
     tokeep = Int[]
     typparas_ = map(stripsubtypes, typparas)
-    for i=1:length(args)
+    for i in 1:length(args)
         isa(args[i], String) && continue # do not keep field doc-strings
         push!(tokeep, i)
         isa(args[i], Symbol) && continue
         # keep the typepara if ∈ typparas
-        @assert args[i].head==:(::)
+        @assert args[i].head == :(::)
         T = args[i].args[2]
         if !(symbol_in(typparas_, T))
             args[i] = decolon2(args[i])
@@ -127,16 +127,16 @@ function keep_only_typparas(args, typparas)
 end
 
 # check whether a symbol is contained in an expression
-symbol_in(s::Symbol, ex::Symbol) = s==ex
+symbol_in(s::Symbol, ex::Symbol) = s == ex
 symbol_in(s::Symbol, ex) = false
 function symbol_in(s::Symbol, ex::Expr)
     for a in ex.args
-        symbol_in(s,a) && return true
+        symbol_in(s, a) && return true
     end
     return false
 end
-symbol_in(s::Symbol, ex::Vector) = any(map(e->symbol_in(s, e), ex))
-symbol_in(s::Vector, ex) = any(map(ss->symbol_in(ss, ex), s))
+symbol_in(s::Symbol, ex::Vector) = any(map(e -> symbol_in(s, e), ex))
+symbol_in(s::Vector, ex) = any(map(ss -> symbol_in(ss, ex), s))
 
 # Returns the name of the type as Symbol
 function typename(typedef::Expr)
@@ -159,16 +159,16 @@ end
 stripsubtypes(vec::Vector) = [stripsubtypes(v) for v in vec]
 
 function check_inner_constructor(l)
-    if l.args[1].head==:where
+    if l.args[1].head == :where
         fnhead = l.args[1].args[1]
     else
         fnhead = l.args[1]
     end
-    if length(fnhead.args)==1
+    if length(fnhead.args) == 1
         error("No inner constructors with zero positional arguments allowed!")
-    elseif (length(fnhead.args)==2 #1<length(fnhead.args)<=3
+    elseif (length(fnhead.args) == 2 #1<length(fnhead.args)<=3
             && fnhead.args[2] isa Expr
-            && fnhead.args[2].head==:parameters)
+            && fnhead.args[2].head == :parameters)
         error("No inner constructors with zero positional arguments plus keyword arguments allowed!")
     end
     nothing
@@ -194,7 +194,7 @@ Dict{Symbol,Any} with 2 entries:
 Note that this uses `getproperty`.
 """
 function type2dict(dt)
-    di = Dict{Symbol,Any}()
+    di = Dict{Symbol, Any}()
     for n in propertynames(dt)
         di[n] = getproperty(dt, n)
     end
@@ -240,12 +240,12 @@ julia> reconstruct(B, y, a=cos) # note reconstruct(y, a=cos) errors!
 B{typeof(cos)}(cos, 1)
 ```
 """
-reconstruct(pp::T, di) where T = reconstruct(T, pp, di)
+reconstruct(pp::T, di) where {T} = reconstruct(T, pp, di)
 reconstruct(pp; kws...) = reconstruct(pp, kws)
 reconstruct(T::Type, pp; kws...) = reconstruct(T, pp, kws)
-function reconstruct(::Type{T}, pp, di) where T
+function reconstruct(::Type{T}, pp, di) where {T}
     di = !isa(di, AbstractDict) ? Dict(di) : copy(di)
-    ns = if T<:AbstractDict
+    ns = if T <: AbstractDict
         if pp isa AbstractDict
             keys(pp)
         else
@@ -255,17 +255,17 @@ function reconstruct(::Type{T}, pp, di) where T
         fieldnames(T)
     end
     args = []
-    for (i,n) in enumerate(ns)
+    for (i, n) in enumerate(ns)
         if pp isa AbstractDict
             push!(args, pop!(di, n, pp[n]))
         else
             push!(args, pop!(di, n, getfield(pp, n)))
         end
     end
-    length(di)!=0 && error("Fields $(keys(di)) not in type $T")
+    length(di) != 0 && error("Fields $(keys(di)) not in type $T")
 
-    if T<:AbstractDict
-        return T(zip(ns,args))
+    if T <: AbstractDict
+        return T(zip(ns, args))
     elseif T <: NamedTuple
         return T(Tuple(args))
     else
@@ -332,9 +332,9 @@ macro pack_MM(varname)
 end
 ```
 """
-function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
-    if typedef.head==:tuple # named-tuple
-        withshow==false && error("`@with_kw_noshow` not supported for named tuples")
+function with_kw(typedef, mod::Module, withshow = true, allow_default = true)
+    if typedef.head == :tuple # named-tuple
+        withshow == false && error("`@with_kw_noshow` not supported for named tuples")
         return with_kw_nt(typedef, mod)
     elseif typedef.head != :struct
         error("""Only works on type-defs or named tuples.
@@ -353,7 +353,7 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # Returns M{...} (removes any supertypes)
     if typedef.args[2] isa Symbol
         typparas = Any[]
-    elseif typedef.args[2].head==:<:
+    elseif typedef.args[2].head == :<:
         if typedef.args[2].args[1] isa Symbol
             typparas = Any[]
         else
@@ -387,8 +387,8 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # top-level)
     # See issue https://github.com/mauro3/Parameters.jl/issues/21
     lns2 = Any[] # need new lines as expanded macros may have many lines
-    for (i,l) in enumerate(lns) # loop over body of typedef
-        if i==1 && has_deftyp
+    for (i, l) in enumerate(lns) # loop over body of typedef
+        if i == 1 && has_deftyp
             push!(lns2, l)
             continue
         end
@@ -396,15 +396,15 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
             push!(lns2, l)
             continue
         end
-        if l.head==:macrocall && l.args[1]!=Symbol("@assert")
+        if l.head == :macrocall && l.args[1] != Symbol("@assert")
             tmp = macroexpand(mod, l)
-            if tmp.head==:block
+            if tmp.head == :block
                 llns = Lines(tmp)
                 for ll in llns
                     push!(lns2, ll)
                 end
             else
-                push!(lns2,tmp)
+                push!(lns2, tmp)
             end
         else
             push!(lns2, l)
@@ -420,8 +420,8 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     kws = OrderedDict{Any, Any}()
     # assertions in the body
     asserts = Any[]
-    for (i,l) in enumerate(lns) # loop over body of typedef
-        if i==1 && has_deftyp
+    for (i, l) in enumerate(lns) # loop over body of typedef
+        if i == 1 && has_deftyp
             # ignore @deftype line
             continue
         end
@@ -438,9 +438,9 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
             push!(unpack_vars, sym)
         elseif l isa String # doc-string
             push!(fielddefs.args, l)
-        elseif l.head==:(=)  # default value and with or without type annotation
-            if l.args[1] isa Expr && (l.args[1].head==:call || # inner constructor
-                                        l.args[1].head==:where && l.args[1].args[1].head==:call) # inner constructor with `where`
+        elseif l.head == :(=)  # default value and with or without type annotation
+            if l.args[1] isa Expr && (l.args[1].head == :call || # inner constructor
+                l.args[1].head == :where && l.args[1].args[1].head == :call) # inner constructor with `where`
                 check_inner_constructor(l)
                 push!(inner_constructors, l)
             else
@@ -450,7 +450,7 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
                 end
                 # add field doc-strings
                 docstring = string("Default: ", l.args[2])
-                if i > 1 && lns[i-1] isa String
+                if i > 1 && lns[i - 1] isa String
                     # if the last line was a docstring, append the default
                     fielddefs.args[end] *= " " * docstring
                 else
@@ -462,19 +462,19 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
                 # unwrap-macro
                 push!(unpack_vars, decolon2(fld))
             end
-        elseif l.head==:macrocall  && l.args[1]==Symbol("@assert")
+        elseif l.head == :macrocall && l.args[1] == Symbol("@assert")
             # store all asserts
             push!(asserts, l)
-        elseif l.head==:function # inner constructor
+        elseif l.head == :function # inner constructor
             check_inner_constructor(l)
             push!(inner_constructors, l)
-        elseif l.head==:block
+        elseif l.head == :block
             error("No nested begin-end allowed in type defintion")
         else # no default value but with type annotation
             push!(fielddefs.args, l)
             sym = decolon2(l.args[1])
             syms = string(sym)
-            kws[sym] = :(error($err1str *$syms * $err2str))
+            kws[sym] = :(error($err1str * $syms * $err2str))
             # unwrap-macro
             push!(unpack_vars, l.args[1])
         end
@@ -488,23 +488,27 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # invariants) which also gets used with the keywords.
     args = Any[]
     kwargs = Expr(:parameters)
-    for (k,w) in kws
+    for (k, w) in kws
         push!(args, k)
-        push!(kwargs.args, Expr(:kw,k,w))
+        push!(kwargs.args, Expr(:kw, k, w))
     end
     if allow_default
-        if length(typparas)>0
+        if length(typparas) > 0
             tps = stripsubtypes(typparas)
-            innerc = :( $tn{$(tps...)}($kwargs) where {$(tps...)} = $tn{$(tps...)}($(args...)))
+            innerc = :(function $tn{$(tps...)}($kwargs) where {$(tps...)}
+                $tn{$(tps...)}($(args...))
+            end)
         else
-            innerc = :($tn($kwargs) = $tn($(args...)) )
+            innerc = :($tn($kwargs) = $tn($(args...)))
         end
     else
-        if length(typparas)>0
+        if length(typparas) > 0
             tps = stripsubtypes(typparas)
-            innerc = :( $tn{$(tps...)}($kwargs) where {$(tps...)} = $tn{$(tps...)}(Parameters.__Private(), $(args...)))
+            innerc = :(function $tn{$(tps...)}($kwargs) where {$(tps...)}
+                $tn{$(tps...)}(Parameters.__Private(), $(args...))
+            end)
         else
-            innerc = :($tn($kwargs) = $tn(Parameters.__Private(), $(args...)) )
+            innerc = :($tn($kwargs) = $tn(Parameters.__Private(), $(args...)))
         end
     end
     push!(typ.args[3].args, innerc)
@@ -512,18 +516,23 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # Inner positional constructor: only make it if no inner
     # constructors are user-defined.  If one or several are defined,
     # assume that one has the standard positional signature.
-    if length(inner_constructors)==0 || !allow_default
+    if length(inner_constructors) == 0 || !allow_default
         if allow_default
-            if length(typparas)>0
+            if length(typparas) > 0
                 tps = stripsubtypes(typparas)
-                innerc2 = :( $tn{$(tps...)}($(args...)) where {$(tps...)} = new{$(tps...)}($(args...)) )
+                innerc2 = :(function $tn{$(tps...)}($(args...)) where {$(tps...)}
+                    new{$(tps...)}($(args...))
+                end)
             else
                 innerc2 = :($tn($(args...)) = new($(args...)))
             end
         else
-            if length(typparas)>0
+            if length(typparas) > 0
                 tps = stripsubtypes(typparas)
-                innerc2 = :( $tn{$(tps...)}(::Parameters.__Private, $(args...)) where {$(tps...)} = new{$(tps...)}($(args...)) )
+                innerc2 = :(function $tn{$(tps...)}(
+                        ::Parameters.__Private, $(args...)) where {$(tps...)}
+                    new{$(tps...)}($(args...))
+                end)
             else
                 innerc2 = :($tn(::Parameters.__Private, $(args...)) = new($(args...)))
             end
@@ -531,7 +540,7 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
         prepend!(innerc2.args[2].args, asserts)
         push!(typ.args[3].args, innerc2)
     else
-        if length(asserts)>0
+        if length(asserts) > 0
             error("Assertions are only allowed in type-definitions with no inner constructors.")
         end
         append!(typ.args[3].args, inner_constructors)
@@ -543,15 +552,18 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     #  (2) all type parameters are used in the fields (otherwise get a
     #      "method is not callable" warning!)
     #       See also https://github.com/JuliaLang/julia/issues/17186
-    if typparas!=Any[] # condition (1)
+    if typparas != Any[] # condition (1)
         # fields definitions stripped of ::Int etc., only keep ::T if T∈typparas :
         fielddef_strip_contT = keep_only_typparas(fielddefs.args, typparas)
         if allow_default
-            outer_positional = :(  $tn($(fielddef_strip_contT...)) where {$(typparas...)}
-                                 = $tn{$(stripsubtypes(typparas)...)}($(args...)))
+            outer_positional = :(function $tn($(fielddef_strip_contT...)) where {$(typparas...)}
+                $tn{$(stripsubtypes(typparas)...)}($(args...))
+            end)
         else
-            outer_positional = :(  $tn(private::Parameters.__Private, $(fielddef_strip_contT...)) where {$(typparas...)}
-                                 = $tn{$(stripsubtypes(typparas)...)}(private, $(args...)))
+            outer_positional = :(function $tn(private::Parameters.__Private,
+                    $(fielddef_strip_contT...)) where {$(typparas...)}
+                $tn{$(stripsubtypes(typparas)...)}(private, $(args...))
+            end)
         end
         # Check condition (2)
         checks = true
@@ -568,13 +580,13 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # Outer keyword constructor, useful to infer the type parameter
     # automatically.  This calls the outer positional constructor.
     # only create if type parameters are used.
-    if typparas==Any[]
-        outer_kw=:()
+    if typparas == Any[]
+        outer_kw = :()
     else
         if allow_default
-            outer_kw = :($tn($kwargs) = $tn($(args...)) )
+            outer_kw = :($tn($kwargs) = $tn($(args...)))
         else
-            outer_kw = :($tn($kwargs) = $tn(Parameters.__Private(), $(args...)) )
+            outer_kw = :($tn($kwargs) = $tn(Parameters.__Private(), $(args...)))
         end
     end
     # NOTE: The reason to have both outer and inner keyword
@@ -595,30 +607,29 @@ function with_kw(typedef, mod::Module, withshow=true, allow_default=true)
     # julia> MT4_{Float32, Int}(r=4, a=5.)
     # MT4_{Float32,Int64}(4.0f0, 5)
 
-
     ## outer copy constructor
     ###
     outer_copy = quote
-        $tn(pp::$tn; kws... ) = $Parameters.reconstruct(pp, kws)
+        $tn(pp::$tn; kws...) = $Parameters.reconstruct(pp, kws)
         # $tn(pp::$tn, di::Union(AbstractDict,Vararg{Tuple{Symbol,Any}}) ) = reconstruct(pp, di) # see issue https://github.com/JuliaLang/julia/issues/11537
         # $tn(pp::$tn, di::Union(AbstractDict, Tuple{Vararg{Tuple{Symbol, Any}}}) ) = reconstruct(pp, di) # see issue https://github.com/JuliaLang/julia/issues/11537
         $tn(pp::$tn, di::$Parameters.AbstractDict) = $Parameters.reconstruct(pp, di)
-        $tn(pp::$tn, di::Vararg{Tuple{Symbol,Any}} ) = $Parameters.reconstruct(pp, di)
+        $tn(pp::$tn, di::Vararg{Tuple{Symbol, Any}}) = $Parameters.reconstruct(pp, di)
     end
 
     # (un)pack macro from https://groups.google.com/d/msg/julia-users/IQS2mT1ITwU/hDtlV7K1elsJ
-    unpack_name = Symbol("unpack_"*string(tn))
-    pack!_name = Symbol("pack_"*string(tn)*"!")
-    pack_name = Symbol("pack_"*string(tn))
+    unpack_name = Symbol("unpack_" * string(tn))
+    pack!_name = Symbol("pack_" * string(tn) * "!")
+    pack_name = Symbol("pack_" * string(tn))
     showfn = if withshow
         :(function Base.show(io::IO, p::$tn)
-              if get(io, :compact, false) || get(io, :typeinfo, nothing)==$tn
+            if get(io, :compact, false) || get(io, :typeinfo, nothing) == $tn
                 Base.show_default(IOContext(io, :limit => true), p)
-              else
+            else
                 # just dumping seems to give ok output, in particular for big data-sets:
-                dump(IOContext(io, :limit => true), p, maxdepth=1)
-              end
-          end)
+                dump(IOContext(io, :limit => true), p, maxdepth = 1)
+            end
+        end)
     else
         :nothing
     end
@@ -668,12 +679,13 @@ function with_kw_nt(typedef, mod)
             va = a.args[2]
             push!(kwargs, Expr(:kw, sy, va))
             push!(args, sy)
-            push!(nt, :($sy=$sy))
+            push!(nt, :($sy = $sy))
         elseif a isa Symbol  # no default value given
             sy = a
             push!(args, sy)
-            push!(nt, :($sy=$sy))
-            push!(kwargs, Expr(:kw, sy, :(error("Supply default value for $($(string(sy)))"))))
+            push!(nt, :($sy = $sy))
+            push!(kwargs,
+                Expr(:kw, sy, :(error("Supply default value for $($(string(sy)))"))))
         else
             error("Cannot parse $(string(a))")
         end
@@ -681,7 +693,7 @@ function with_kw_nt(typedef, mod)
     NT = gensym(:NamedTuple_kw)
     nt = Expr(:tuple, nt...)
     quote
-        $NT(; $(kwargs...)) =$nt
+        $NT(; $(kwargs...)) = $nt
         $NT($(args...)) = $nt
         $NT
     end

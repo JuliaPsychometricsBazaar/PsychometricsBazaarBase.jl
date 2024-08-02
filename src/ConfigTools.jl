@@ -22,7 +22,7 @@ If `bar()` returns `nothing`, then the macro causes the current function to
 return `nothing`. Otherwise, execution continues.
 """
 macro requiresome(assign)
-    @capture(assign, name_ = expr_) || error("@requiresome must be passed an assignment")
+    @capture(assign, name_=expr_) || error("@requiresome must be passed an assignment")
     quote
         $(esc(assign))
         if $(esc(name)) === nothing
@@ -134,7 +134,7 @@ error is thrown.
 """
 function find1_type_sloppy(type, iter)
     @returnsome find1_type(type, iter)
-    @returnsome find1_instance(type, iter) inst -> typeof(inst)
+    @returnsome find1_instance(type, iter) inst->typeof(inst)
 end
 
 end

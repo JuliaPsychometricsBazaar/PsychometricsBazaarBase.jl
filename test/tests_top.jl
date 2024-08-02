@@ -1,6 +1,5 @@
 using XUnit
 
-
 @testset "aqua" begin
     include("./aqua.jl")
 end

@@ -26,7 +26,8 @@ end
 # explicitly passing this through from the caller at some point.
 # Just preallocate an arbitrary size for now (easiest, would make more sense to use 'order' somehow but we don't have it)
 # It's 24 * 100 * threads bytes, ~10kb for 4 threads which is unconditionally allocated when this library is used
-segbufs = [Vector{Segment{Float64, Float64, Float64}}(undef, 100) for _ in Threads.nthreads()]
+segbufs = [Vector{Segment{Float64, Float64, Float64}}(undef, 100)
+           for _ in Threads.nthreads()]
 
 """
     (integrator::QuadGKIntegrator)(f[, ncomp, lo, hi; order=..., rtol=...])
@@ -34,17 +35,18 @@ segbufs = [Vector{Segment{Float64, Float64, Float64}}(undef, 100) for _ in Threa
 Perform an adaptive Gauss-Kronrod integration using `QuadGK.jl`.
 """
 function (integrator::QuadGKIntegrator)(
-    f::F,
-    ncomp=0,
-    lo=integrator.lo,
-    hi=integrator.hi;
-    order=integrator.order,
-    rtol=1e-4
-) where F
+        f::F,
+        ncomp = 0,
+        lo = integrator.lo,
+        hi = integrator.hi;
+        order = integrator.order,
+        rtol = 1e-4
+) where {F}
     if ncomp != 0
         error("QuadGKIntegrator only supports ncomp == 0")
     end
-    ErrorIntegrationResult(quadgk(f, lo, hi, rtol=rtol, segbuf=segbufs[Threads.threadid()], order=order)...)
+    ErrorIntegrationResult(quadgk(
+        f, lo, hi, rtol = rtol, segbuf = segbufs[Threads.threadid()], order = order)...)
 end
 
 """
@@ -64,12 +66,12 @@ end
 Perform a fixed-order Gauss-Kronrod integration based on `QuadGK.jl`.
 """
 function (integrator::FixedGKIntegrator)(
-    f::F,
-    ncomp=0,
-    lo=integrator.lo,
-    hi=integrator.hi;
-    order=integrator.order
-) where F
+        f::F,
+        ncomp = 0,
+        lo = integrator.lo,
+        hi = integrator.hi;
+        order = integrator.order
+) where {F}
     if ncomp != 0
         error("FixedGKIntegrator only supports ncomp == 0")
     end
@@ -102,12 +104,12 @@ end
 Perform a fixed-order multi-dimensional Gauss-Kronrod integrator based on `QuadGK.jl`.
 """
 function (integrator::MultiDimFixedGKIntegrator)(
-    f::F,
-    ncomp=1,
-    lo=integrator.lo,
-    hi=integrator.hi;
-    order=integrator.order
-) where F
+        f::F,
+        ncomp = 1,
+        lo = integrator.lo,
+        hi = integrator.hi;
+        order = integrator.order
+) where {F}
     x = Array{Float64}(undef, length(lo))
     function inner(idx)
         function integrate()

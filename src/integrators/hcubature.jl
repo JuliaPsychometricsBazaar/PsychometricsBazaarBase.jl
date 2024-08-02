@@ -21,12 +21,12 @@ end
 Perform Cubature integration based on `HCubature.jl`.
 """
 function (integrator::HCubatureIntegrator)(
-    f::F;
-    ncomp=1,
-    lo=integrator.lo,
-    hi=integrator.hi,
-    kwargs...
-) where F
+        f::F;
+        ncomp = 1,
+        lo = integrator.lo,
+        hi = integrator.hi,
+        kwargs...
+) where {F}
     ErrorIntegrationResult(HCubature.hcubature(
         f, lo, hi;
         merge(integrator.kwargs, kwargs)...

@@ -1,7 +1,7 @@
 using QuasiMonteCarlo
 
-
-struct FixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <: Integrator
+struct FixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
+       Integrator
     grid::ContainerT
 
     function FixedGridIntegrator(grid)
@@ -20,8 +20,8 @@ end
 function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector, quadpts_per_dim)
     prod = Iterators.product((
         range(lo, hi, length = quadpts_per_dim)
-        for (lo, hi)
-        in zip(theta_lo, theta_hi)
+    for (lo, hi)
+    in zip(theta_lo, theta_hi)
     )...)
     grid = reshape(collect.(prod), :)
     FixedGridIntegrator(grid)
@@ -36,7 +36,9 @@ function (integrator::FixedGridIntegrator)(args...; kwargs...)
     preallocate(integrator)(args...; kwargs...)
 end
 
-struct PreallocatedFixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Matrix{Float64}}} <: Integrator
+struct PreallocatedFixedGridIntegrator{ContainerT <:
+                                       Union{Vector{Float64}, Matrix{Float64}}} <:
+       Integrator
     inner::FixedGridIntegrator
     buf::ContainerT
 
@@ -55,24 +57,24 @@ struct PreallocatedFixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Matr
 end
 
 function (integrator::PreallocatedFixedGridIntegrator)(
-    f::F,
-    ncomp::Int=0
-) where F
+        f::F,
+        ncomp::Int = 0
+) where {F}
     if ncomp == 0
         integrator.buf .= f.(integrator.inner.grid)
         BareIntegrationResult(sum(integrator.buf))
     else
         buf_rows = eachrow(integrator.buf)
         buf_rows .= f.(integrator.inner.grid)
-        BareIntegrationResult(dropdims(sum(integrator.buf, dims=1), dims=1))
+        BareIntegrationResult(dropdims(sum(integrator.buf, dims = 1), dims = 1))
     end
 end
 
 function (integrator::PreallocatedFixedGridIntegrator)(
-    f::F,
-    init::AbstractVector{Float64},
-    ncomp::Int=0
-) where F
+        f::F,
+        init::AbstractVector{Float64},
+        ncomp::Int = 0
+) where {F}
     if ncomp == 0
         @. integrator.buf = (f.f)(integrator.inner.grid)
         @. integrator.buf = integrator.buf * init
@@ -82,7 +84,7 @@ function (integrator::PreallocatedFixedGridIntegrator)(
         buf_rows = eachrow(integrator.buf)
         @. buf_rows = (f.f)(integrator.inner.grid)
         @. buf_rows = buf_rows * init
-        BareIntegrationResult(dropdims(sum(integrator.buf, dims=1), dims=1))
+        BareIntegrationResult(dropdims(sum(integrator.buf, dims = 1), dims = 1))
     end
 end
 
@@ -99,9 +101,9 @@ struct IterativeFixedGridIntegrator <: Integrator
 end
 
 function (integrator::IterativeFixedGridIntegrator)(
-    f::F,
-    ncomp=0
-) where F
+        f::F,
+        ncomp = 0
+) where {F}
     if ncomp != 0
         error("IterativeFixedGridIntegrator only supports ncomp == 0")
     end

@@ -6,54 +6,54 @@ module Optimizers
 
 export Optimizer, OneDimOptimOptimizer, MultiDimOptimOptimizer
 export
-       # Optimization algorithms
-       ## Zeroth order methods (heuristics)
-       NelderMead,
-       ParticleSwarm,
-       SimulatedAnnealing,
+# Optimization algorithms
+## Zeroth order methods (heuristics)
+      NelderMead,
+      ParticleSwarm,
+      SimulatedAnnealing,
 
-       ## First order
-       ### Quasi-Newton
-       GradientDescent,
-       BFGS,
-       LBFGS,
+## First order
+### Quasi-Newton
+      GradientDescent,
+      BFGS,
+      LBFGS,
 
-       ### Conjugate gradient
-       ConjugateGradient,
+### Conjugate gradient
+      ConjugateGradient,
 
-       ### Acceleration methods
-       AcceleratedGradientDescent,
-       MomentumGradientDescent,
+### Acceleration methods
+      AcceleratedGradientDescent,
+      MomentumGradientDescent,
 
-       ### Nonlinear GMRES
-       NGMRES,
-       OACCEL,
+### Nonlinear GMRES
+      NGMRES,
+      OACCEL,
 
-       ## Second order
-       ### (Quasi-)Newton
-       Newton,
+## Second order
+### (Quasi-)Newton
+      Newton,
 
-       ### Trust region
-       NewtonTrustRegion,
+### Trust region
+      NewtonTrustRegion,
 
-       # Constrained
-       ## Box constraints, x_i in [lb_i, ub_i]
-       ### Specifically Univariate, R -> R
-       GoldenSection,
-       Brent,
+# Constrained
+## Box constraints, x_i in [lb_i, ub_i]
+### Specifically Univariate, R -> R
+      GoldenSection,
+      Brent,
 
-       ### Multivariate, R^N -> R
-       Fminbox,
-       SAMIN,
+### Multivariate, R^N -> R
+      Fminbox,
+      SAMIN,
 
-       ## Manifold constraints
-       Manifold,
-       Flat,
-       Sphere,
-       Stiefel,
+## Manifold constraints
+      Manifold,
+      Flat,
+      Sphere,
+      Stiefel,
 
-       ## Non-linear constraints
-       IPNewton
+## Non-linear constraints
+      IPNewton
 
 using ..ConfigTools
 using ..Parameters
@@ -83,13 +83,13 @@ function OneDimOptimOptimizer(lo, hi, optim)
     OneDimOptimOptimizer(lo, hi, lo + (hi - lo) / 2, optim, Optim.Options())
 end
 
-function(opt::OneDimOptimOptimizer)(
-    f::F;
-    lo=opt.lo,
-    hi=opt.hi,
-    initial=opt.initial,
-    optim=opt.optim,
-    opts=opt.opts
+function (opt::OneDimOptimOptimizer)(
+        f::F;
+        lo = opt.lo,
+        hi = opt.hi,
+        initial = opt.initial,
+        optim = opt.optim,
+        opts = opt.opts
 ) where {F}
     Optim.minimizer(optimize(
         θ_arr -> -f(first(θ_arr)),
@@ -118,13 +118,13 @@ function MultiDimOptimOptimizer(lo, hi, optim)
     MultiDimOptimOptimizer(lo, hi, lo + (hi - lo) / 2, optim, Optim.Options())
 end
 
-function(opt::MultiDimOptimOptimizer)(
-    f::F;
-    lo=opt.lo,
-    hi=opt.hi,
-    initial=opt.initial,
-    optim=opt.optim,
-    opts=opt.opts
+function (opt::MultiDimOptimOptimizer)(
+        f::F;
+        lo = opt.lo,
+        hi = opt.hi,
+        initial = opt.initial,
+        optim = opt.optim,
+        opts = opt.opts
 ) where {F}
     Optim.minimizer(optimize(
         θ_arr -> -f(θ_arr),

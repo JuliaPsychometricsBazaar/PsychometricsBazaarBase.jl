@@ -1,7 +1,6 @@
 using JET
 using PsychometricsBazaarBase
 
-
 @testset "JET checks" begin
     rep = report_package(
         PsychometricsBazaarBase;

@@ -43,9 +43,10 @@ function normdenom(integrator::Integrator; options...)
     normdenom(IntValue(), integrator; options...)
 end
 
-function normdenom(rett::IntReturnType, integrator::Integrator; lo=integrator.lo, hi=integrator.hi, options...)
+function normdenom(rett::IntReturnType, integrator::Integrator;
+        lo = integrator.lo, hi = integrator.hi, options...)
     # XXX: Presumably we can just return the analytic value here instead? Is this function even needed?
-    rett(integrator(one; lo=lo, hi=hi, options...))
+    rett(integrator(one; lo = lo, hi = hi, options...))
 end
 
 struct ScaleUnitDomain{F}
