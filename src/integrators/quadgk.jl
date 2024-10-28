@@ -90,10 +90,6 @@ struct MultiDimFixedGKIntegrator{OrderT <: AbstractVector{Int}} <: Integrator
     order::OrderT
 end
 
-function MultiDimFixedGKIntegrator(lo, hi)
-    MultiDimFixedGKIntegrator(lo, hi, mirtcat_quadpnts(length(lo)))
-end
-
 function MultiDimFixedGKIntegrator(lo, hi, order::Int)
     MultiDimFixedGKIntegrator(lo, hi, Fill(order, length(lo)))
 end

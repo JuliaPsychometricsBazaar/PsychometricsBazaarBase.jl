@@ -70,23 +70,6 @@ function (sud::ScaleUnitDomain)(x)
     sud.scaler * sud.f(sud.lo .+ sud.interval .* x)
 end
 
-# Values from fscore() from mirt/mirtCAT
-function mirtcat_quadpnts(nd)
-    if nd == 1
-        61
-    elseif nd == 2
-        31
-    elseif nd == 3
-        15
-    elseif nd == 4
-        9
-    elseif nd == 5
-        7
-    else
-        3
-    end
-end
-
 """
 The result of an integration technique which provides no error value.
 
