@@ -17,19 +17,19 @@ function even_grid(theta_lo::Number, theta_hi::Number, quadpts)
     FixedGridIntegrator(range(theta_lo, theta_hi, quadpts))
 end
 
-function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector, quadpts_per_dim)
+function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector, quadpts_per_dim; impl=FixedGridIntegrator)
     prod = Iterators.product((
         range(lo, hi, length = quadpts_per_dim)
     for (lo, hi)
     in zip(theta_lo, theta_hi)
     )...)
     grid = reshape(collect.(prod), :)
-    FixedGridIntegrator(grid)
+    impl(grid)
 end
 
-function quasimontecarlo_grid(theta_lo, theta_hi, quadpts, sampler)
+function quasimontecarlo_grid(theta_lo, theta_hi, quadpts, sampler; impl=FixedGridIntegrator)
     grid = QuasiMonteCarlo.sample(quadpts, theta_lo, theta_hi, sampler)
-    FixedGridIntegrator(grid)
+    impl(grid)
 end
 
 function (integrator::FixedGridIntegrator)(args...; kwargs...)
@@ -50,6 +50,7 @@ struct PreallocatedFixedGridIntegrator{ContainerT <:
 
     function PreallocatedFixedGridIntegrator(inner::FixedGridIntegrator{Vector{Vector{Float64}}})
         quadpts = length(inner.grid)
+        # XXX: In general this is wrong. The output dimension could be anything.
         dim = length(inner.grid[1])
         buf = Matrix{Float64}(undef, quadpts, dim)
         new{Matrix{Float64}}(inner, buf)
@@ -96,20 +97,11 @@ function preallocate(integrator::Integrator)
     integrator
 end
 
-struct IterativeFixedGridIntegrator <: Integrator
-    grid::Vector{Float64}
+struct IterativeFixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <: Integrator
+    grid::ContainerT
 end
 
-function (integrator::IterativeFixedGridIntegrator)(
-        f::F,
-        ncomp = 0
-) where {F}
-    if ncomp != 0
-        error("IterativeFixedGridIntegrator only supports ncomp == 0")
-    end
-    s = 0.0
-    for x in integrator.grid
-        s += f(x)
-    end
+function (integrator::IterativeFixedGridIntegrator)(f::F, ncomp = nothing) where {F}
+    s = sum(f, integrator.grid)
     BareIntegrationResult(s)
 end
