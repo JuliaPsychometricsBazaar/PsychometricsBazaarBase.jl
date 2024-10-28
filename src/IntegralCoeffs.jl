@@ -36,6 +36,18 @@ end
     (x .- sq_dev.center) .^ 2
 end
 
+"""
+$(SIGNATURES)
+"""
+struct OuterProdDev{CenterT}
+    center::CenterT
+end
+
+@inline function (sq_dev::OuterProdDev{CenterT})(x::CenterT) where {CenterT}
+    devs = (x .- sq_dev.center)
+    devs * devs'
+end
+
 struct Prior{Dist <: Distribution}
     dist::Dist
 end
