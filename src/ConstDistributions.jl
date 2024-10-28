@@ -3,7 +3,7 @@ This module contains standard distributions for usage as transfer functions for 
 """
 module ConstDistributions
 
-using Distributions: Logistic, Normal
+using Distributions: Logistic, Normal, MvNormal, Zeros, ScalMat
 
 using Lazy: @forward
 using DocStringExtensions
@@ -27,5 +27,7 @@ const normal_scaled_logistic = Logistic(0.0, 1.0 / logistic_to_normal_scaling_fa
 The standard normal distribution.
 """
 const std_normal = Normal()
+
+std_mv_normal(dim) = MvNormal(Zeros(dim), ScalMat(dim, 1.0))
 
 end
