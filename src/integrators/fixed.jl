@@ -17,7 +17,8 @@ function even_grid(theta_lo::Number, theta_hi::Number, quadpts)
     FixedGridIntegrator(range(theta_lo, theta_hi, quadpts))
 end
 
-function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector, quadpts_per_dim; impl=FixedGridIntegrator)
+function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector,
+        quadpts_per_dim; impl = FixedGridIntegrator)
     prod = Iterators.product((
         range(lo, hi, length = quadpts_per_dim)
     for (lo, hi)
@@ -27,7 +28,8 @@ function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector, quadpts_p
     impl(grid)
 end
 
-function quasimontecarlo_grid(theta_lo, theta_hi, quadpts, sampler; impl=FixedGridIntegrator)
+function quasimontecarlo_grid(
+        theta_lo, theta_hi, quadpts, sampler; impl = FixedGridIntegrator)
     grid = QuasiMonteCarlo.sample(quadpts, theta_lo, theta_hi, sampler)
     impl(grid)
 end
@@ -97,7 +99,9 @@ function preallocate(integrator::Integrator)
     integrator
 end
 
-struct IterativeFixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <: Integrator
+struct IterativeFixedGridIntegrator{ContainerT <:
+                                    Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
+       Integrator
     grid::ContainerT
 end
 

@@ -1,4 +1,5 @@
-struct FixedGridOptimizer{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <: Optimizer
+struct FixedGridOptimizer{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
+       Optimizer
     grid::ContainerT
 
     function FixedGridOptimizer(grid)
@@ -17,7 +18,7 @@ end
 function even_grid(theta_lo::AbstractVector, theta_hi::AbstractVector, quadpts_per_dim)
     prod = Iterators.product((
         range(lo, hi, length = quadpts_per_dim)
-        for (lo, hi) in zip(theta_lo, theta_hi)
+    for (lo, hi) in zip(theta_lo, theta_hi)
     )...)
     grid = reshape(collect.(prod), :)
     FixedGridOptimizer(grid)
