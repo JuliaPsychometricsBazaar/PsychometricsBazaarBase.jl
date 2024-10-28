@@ -23,7 +23,7 @@ QuasiMonteCarlo = "8a4e6c94-4038-4cdc-81c3-7e6ffdb2a71b"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
-Aqua = "0.8"
+Aqua = "^0.8.9"
 Cuba = "2"
 Cubature = "^1.5.1"
 Distributions = "^0.25.49"
