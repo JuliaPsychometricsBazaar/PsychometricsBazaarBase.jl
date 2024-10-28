@@ -4,6 +4,7 @@ techniques.
 """
 module Optimizers
 
+export FixedGridOptimizer, even_grid, quasimontecarlo_grid
 export Optimizer, OneDimOptimOptimizer, MultiDimOptimOptimizer
 export
 # Optimization algorithms
@@ -135,5 +136,7 @@ function (opt::MultiDimOptimOptimizer)(
         opts
     ))
 end
+
+include("./fixed.jl")
 
 end
