@@ -21,8 +21,8 @@ end
 Perform Cubature integration based on `HCubature.jl`.
 """
 function (integrator::HCubatureIntegrator)(
-        f::F;
-        ncomp = 1,
+        f::F,
+        ncomp = 1;
         lo = integrator.lo,
         hi = integrator.hi,
         kwargs...
