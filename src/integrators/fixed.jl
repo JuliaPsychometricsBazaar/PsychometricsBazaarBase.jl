@@ -63,7 +63,7 @@ function (integrator::PreallocatedFixedGridIntegrator)(
         f::F,
         ncomp::Int = 0
 ) where {F}
-    if ncomp == 0
+    if ncomp == 0 || ncomp == 1
         integrator.buf .= f.(integrator.inner.grid)
         BareIntegrationResult(sum(integrator.buf))
     else
