@@ -2,6 +2,8 @@ module PsychometricsBazaarBase
 
 using DocStringExtensions
 
+public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions, Interpolators, Optimizers
+
 include("./vendor/Parameters.jl")
 include("./ConfigTools.jl")
 include("./IntegralCoeffs.jl")
