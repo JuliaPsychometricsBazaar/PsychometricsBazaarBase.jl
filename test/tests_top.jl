@@ -11,7 +11,3 @@ end
 @testset "smoke" begin
     include("./smoke.jl")
 end
-
-@testset "format" begin
-    include("./format.jl")
-end

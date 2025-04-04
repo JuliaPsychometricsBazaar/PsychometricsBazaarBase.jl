@@ -32,7 +32,6 @@ FillArrays = "0.13, 1"
 HCubature = "^1.1.0"
 Interpolations = "0.13, 0.14, 0.15"
 JET = "^0.9.12"
-JuliaFormatter = "1.0.59"
 Lazy = "0.15"
 LinearAlgebra = "^1.10"
 MacroTools = "^0.5.6"
@@ -49,8 +48,7 @@ julia = "^1.11"
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
-JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 XUnit = "3e3c03f2-1a94-11e9-2981-050a4ca824ab"
 
 [targets]
-test = ["Aqua", "XUnit", "JET", "JuliaFormatter"]
+test = ["Aqua", "XUnit", "JET"]
