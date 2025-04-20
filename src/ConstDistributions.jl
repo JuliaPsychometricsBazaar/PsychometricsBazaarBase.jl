@@ -8,7 +8,7 @@ using Distributions: Logistic, Normal, MvNormal, Zeros, ScalMat
 using Lazy: @forward
 using DocStringExtensions
 
-export normal_scaled_logistic, std_normal
+export normal_scaled_logistic, std_logistic, std_normal
 
 """
 This scaling facot seems to be the most commonly found exact value in the wild,
@@ -22,6 +22,11 @@ distribution based upon the logistic distribution. It has been commonly used in
 IRT modelling, such as in the `mirt` package for R.
 """
 const normal_scaled_logistic = Logistic(0.0, 1.0 / logistic_to_normal_scaling_factor)
+
+"""
+The standard logistic distribution.
+"""
+const std_logistic = Logistic()
 
 """
 The standard normal distribution.
