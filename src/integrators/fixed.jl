@@ -109,3 +109,21 @@ function (integrator::IterativeFixedGridIntegrator)(f::F, ncomp = nothing) where
     s = sum(f, integrator.grid)
     BareIntegrationResult(s)
 end
+
+struct MidpointIntegrator <: Integrator
+    xs::Vector{Float64}
+    buf::Vector{Float64}
+
+    function MidpointIntegrator(xs)
+        buf = Vector{Float64}(undef, length(xs))
+        new(xs, buf)
+    end
+end
+
+function (integrator::MidpointIntegrator)(f::F, ncomp = nothing) where {F}
+    # This is equivalent to the unnormalised trapezoidal rule,
+    # assuming that the grid is evenly spaced.
+    integrator.buf .= f.(integrator.xs)
+    s = integrator.buf[1] + 2 * sum(integrator.buf[2 : end - 1]) + integrator.buf[end]
+    BareIntegrationResult(s)
+end
