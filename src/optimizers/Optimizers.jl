@@ -84,7 +84,28 @@ function OneDimOptimOptimizer(lo, hi, optim)
     OneDimOptimOptimizer(lo, hi, lo + (hi - lo) / 2, optim, Optim.Options())
 end
 
-function (opt::OneDimOptimOptimizer)(
+function (opt::OneDimOptimOptimizer{<: IPNewton})(
+        f::F;
+        lo = opt.lo,
+        hi = opt.hi,
+        initial = opt.initial,
+        optim = opt.optim,
+        opts = opt.opts
+) where {F}
+    df = TwiceDifferentiable(
+        θ_arr -> -f(first(θ_arr)),
+        [initial]
+    )
+    Optim.minimizer(optimize(
+        df,
+        TwiceDifferentiableConstraints([lo], [hi]),
+        [initial],
+        optim,
+        opts
+    ))[1]
+end
+
+function (opt::OneDimOptimOptimizer{<: NelderMead})(
         f::F;
         lo = opt.lo,
         hi = opt.hi,
@@ -134,6 +155,34 @@ function (opt::MultiDimOptimOptimizer)(
         initial,
         optim,
         opts
+    ))
+end
+
+@kwdef struct NativeOneDimOptimOptimizer{T, MethodT <: Union{Brent,GoldenSection}} <: Optimizer
+    lo::T
+    hi::T
+    method::MethodT=Brent()
+    rel_tol::T=1e-4
+    abs_tol::T=0.0
+end
+
+NativeOneDimOptimOptimizer(lo, hi) = NativeOneDimOptimOptimizer(lo, hi, Brent())
+
+function (opt::NativeOneDimOptimOptimizer)(
+        f::F;
+        lo = opt.lo,
+        hi = opt.hi,
+        method = opt.method,
+        rel_tol = opt.rel_tol,
+        abs_tol = opt.abs_tol
+) where {F}
+    Optim.minimizer(optimize(
+        θ -> -f(θ),
+        lo,
+        hi,
+        method;
+        rel_tol,
+        abs_tol
     ))
 end
 
