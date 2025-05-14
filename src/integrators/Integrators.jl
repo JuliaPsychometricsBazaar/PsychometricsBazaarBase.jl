@@ -11,6 +11,7 @@ export IntReturnType, IntValue, IntMeasurement
 export CubaIntegrator, CubaVegas, CubaSuave, CubaDivonne, CubaCuhre
 export FixedGridIntegrator, PreallocatedFixedGridIntegrator
 export even_grid, quasimontecarlo_grid
+export AbstractIntegrationResult
 export BareIntegrationResult, ErrorIntegrationResult
 
 using ..ConfigTools
@@ -71,12 +72,14 @@ function (sud::ScaleUnitDomain)(x)
     sud.scaler * sud.f(sud.lo .+ sud.interval .* x)
 end
 
+abstract type AbstractIntegrationResult end
+
 """
 The result of an integration technique which provides no error value.
 
 $(TYPEDFIELDS)
 """
-struct BareIntegrationResult{VecT}
+struct BareIntegrationResult{VecT} <: AbstractIntegrationResult
     vec::VecT
 end
 
@@ -87,7 +90,7 @@ general.
 
 $(TYPEDFIELDS)
 """
-struct ErrorIntegrationResult{VecT, ErrT}
+struct ErrorIntegrationResult{VecT, ErrT} <: AbstractIntegrationResult
     vec::VecT
     err::ErrT
 end
