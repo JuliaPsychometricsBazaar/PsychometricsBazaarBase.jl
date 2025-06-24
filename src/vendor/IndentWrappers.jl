@@ -46,9 +46,9 @@ toplevel
         - level 2
 ```
 """
-indent(io::IO, spaces::Integer) = IndentWrapper(io, spaces)
+indent(io::IO, spaces::Integer; kwargs...) = IndentWrapper(io, spaces; kwargs...)
 
-indent(iw::IndentWrapper, spaces::Integer) = IndentWrapper(iw.parent, iw.spaces + spaces)
+indent(iw::IndentWrapper, spaces::Integer; kwargs...) = IndentWrapper(iw.parent, iw.spaces + spaces; kwargs...)
 
 function Base.show(io::IO, iw::IndentWrapper)
     print(io, iw.parent, " indented by $(iw.spaces) spaces")
@@ -96,12 +96,13 @@ function Base.write(iw::IndentWrapper, str::Union{SubString{String}, String})
     for (i, line) in enumerate(lines)
         if i > 1
             write_count += write(iw.parent, '\n')
-            write_count += _write_spaces(iw)
+            if i == length(lines) && length(line) == 0
+                iw.need_indent[] = true
+            else
+                write_count += _write_spaces(iw)
+            end
         end
         write_count += write(iw.parent, line)
-        if i == length(lines)
-            iw.need_indent[] = length(line) == 0
-        end
     end
     write_count
 end
