@@ -13,9 +13,11 @@ export FixedGridIntegrator, PreallocatedFixedGridIntegrator
 export even_grid, quasimontecarlo_grid
 export AbstractIntegrationResult
 export BareIntegrationResult, ErrorIntegrationResult
+import Base: show
 
 using ..ConfigTools
 using ..IntegralCoeffs: one
+using ..IndentWrappers: indent
 import Measurements
 using DocStringExtensions
 

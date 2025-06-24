@@ -124,6 +124,31 @@ function (integrator::IterativeFixedGridIntegrator)(f::F, ncomp = nothing) where
     BareIntegrationResult(s)
 end
 
+function show(io::IO, ::MIME"text/plain", integrator::Union{FixedGridIntegrator, IterativeFixedGridIntegrator})
+    if integrator.grid isa AbstractRange
+        println(io, "Fixed step grid integrator:")
+    else
+        println(io, "Array-based grid integrator:")
+    end
+    println(io, "  Number of integration points: ", length(integrator.grid))
+    println(io, "  Dimensions: ", length(integrator.grid[1]))
+    if integrator.grid isa AbstractRange
+        println(io, "  Start: ", first(integrator.grid))
+        println(io, "  End: ", last(integrator.grid))
+        println(io, "  Step size: ", step(integrator.grid))
+    else
+        println(io, "  Grid:")
+        buf = IOBuffer()
+        show(IOContext(buf, :limit => true, :displaysize => (10, 10)), MIME("text/plain"), integrator.grid)
+        seekstart(buf)
+        for line in eachline(buf)
+            println(io, "    ", line)
+        end
+    end
+end
+
+show(io::IO, ::MIME"text/plain", integrator::PreallocatedFixedGridIntegrator) = show(io, MIME("text/plain"), integrator)
+
 struct MidpointIntegrator <: Integrator
     xs::Vector{Float64}
     buf::Vector{Float64}
