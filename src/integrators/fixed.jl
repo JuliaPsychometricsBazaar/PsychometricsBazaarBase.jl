@@ -119,6 +119,7 @@ struct IterativeFixedGridIntegrator{ContainerT <:
     grid::ContainerT
 end
 
+
 function (integrator::IterativeFixedGridIntegrator)(f::F, ncomp = nothing) where {F}
     s = sum(f, integrator.grid)
     BareIntegrationResult(s)
@@ -166,3 +167,12 @@ function (integrator::MidpointIntegrator)(f::F, ncomp = nothing) where {F}
     s = integrator.buf[1] + 2 * sum(integrator.buf[2 : end - 1]) + integrator.buf[end]
     BareIntegrationResult(s)
 end
+
+# Generic interface
+
+get_grid(integrator::FixedGridIntegrator) = integrator.grid
+get_grid(integrator::PreallocatedFixedGridIntegrator) = integrator.inner.grid
+get_grid(integrator::IterativeFixedGridIntegrator) = integrator.grid
+get_grid(integrator::MidpointIntegrator) = integrator.xs
+
+AnyGridIntegrator = Union{FixedGridIntegrator, IterativeFixedGridIntegrator, PreallocatedFixedGridIntegrator, MidpointIntegrator}
