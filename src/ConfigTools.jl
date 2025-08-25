@@ -137,4 +137,11 @@ function find1_type_sloppy(type, iter)
     @returnsome find1_instance(type, iter) inst->typeof(inst)
 end
 
+"""
+summary(io::IO, obj::Any; kwargs...)
+
+Internal summary method used by `show`. All arguments are passed by kwargs which may vary by the type of `obj`.
+"""
+function summary end
+
 end
