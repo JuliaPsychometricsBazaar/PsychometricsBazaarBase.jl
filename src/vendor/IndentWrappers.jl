@@ -107,4 +107,44 @@ function Base.write(iw::IndentWrapper, str::Union{SubString{String}, String})
     write_count
 end
 
+function Base.write(iw::IndentWrapper, from::AbstractVector{UInt8})
+    _check_need_indent(iw)
+    write_count = 0
+    line_start = 1
+    while true
+        next_newline_idx = findnext(x -> x == 0x0A, from, line_start)
+        if isnothing(next_newline_idx)
+            line_end = length(from)
+        else
+            line_end = next_newline_idx
+        end
+        if line_start > 1
+            if line_end < line_start
+                # Empty final line
+                iw.need_indent[] = true
+                break
+            else
+                write_count += _write_spaces(iw)
+            end
+        end
+        write_count += write(iw.parent, @view from[line_start:line_end])
+        # Unterminated final line
+        if isnothing(next_newline_idx)
+            break
+        end
+        line_start = line_end + 1
+    end
+    write_count
+end
+
+function Base.write(to::IndentWrapper, from::StridedVector{UInt8})
+    return invoke(Base.write, Tuple{IndentWrapper, AbstractVector{UInt8}}, to, from)
+end
+
+# Override dispatching to Base.write(::IO, ::GenericIOBuffer) which uses raw writing
+# on the underlying fd so doesn't indent.
+function Base.write(to::IndentWrapper, from::Base.GenericIOBuffer)
+    invoke(Base.write, Tuple{IO, IO}, to, from)
+end
+
 end
