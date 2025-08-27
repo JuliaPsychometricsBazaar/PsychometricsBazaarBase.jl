@@ -5,15 +5,26 @@ using DocStringExtensions
 public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions,
        Interpolators, Optimizers
 
-function show_into_string(obj, mime::MIME = MIME("text/plain"))
-    buf = IOBuffer()
-    show(buf, mime, rules)
-    return String(take!(buf))
+export show_into_string, show_into_buf, power_summary_into_string,
+       power_summary_into_buf
+
+function show_into_string(obj, mime::MIME = MIME("text/plain"); kwargs...)
+    return String(take!(show_into_buf(obj, mime; kwargs...)))
 end
 
-function show_into_buf(obj, mime::MIME = MIME("text/plain"))
+function show_into_buf(obj, mime::MIME = MIME("text/plain"); kwargs...)
     buf = IOBuffer()
-    show(buf, mime, rules)
+    show(buf, mime, obj; kwargs...)
+    return seekstart(buf)
+end
+
+function power_summary_into_string(obj; kwargs...)
+    return String(take!(power_summary_into_buf(obj; kwargs...)))
+end
+
+function power_summary_into_buf(obj, mime::MIME = MIME("text/plain"); kwargs...)
+    buf = IOBuffer()
+    power_summary(buf, obj; kwargs...)
     return seekstart(buf)
 end
 
