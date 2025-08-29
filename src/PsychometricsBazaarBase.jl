@@ -19,6 +19,27 @@ In practice, show(::IO, MIME"text/plain", obj) may use this internally.
 """
 function power_summary end
 
+module PowerSummaryDispatchSugar
+    using ..PsychometricsBazaarBase: power_summary_into_string
+    import ..power_summary
+
+    function power_summary(io::IO, obj; kwargs...)
+        if parentmodule(which(power_summary, Tuple{typeof(obj)})) == PowerSummaryDispatchSugar
+            # Pretend this method wasn't found
+            throw(MethodError(power_summary, (IO, typeof(obj),)))
+        end
+        print(io, power_summary(obj))
+    end
+
+    function power_summary(obj; kwargs...)
+        if parentmodule(which(power_summary, Tuple{IO, typeof(obj)})) == PowerSummaryDispatchSugar
+            # Pretend this method wasn't found
+            throw(MethodError(power_summary, (typeof(obj),)))
+        end
+        power_summary_into_string(obj; kwargs...)
+    end
+end
+
 function show_into_string(obj, mime::MIME = MIME("text/plain"); kwargs...)
     return String(take!(show_into_buf(obj, mime; kwargs...)))
 end
