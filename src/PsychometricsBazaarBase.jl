@@ -66,7 +66,7 @@ function power_summary_into_string(obj; kwargs...)
     return String(take!(power_summary_into_buf(obj; kwargs...)))
 end
 
-function power_summary_into_buf(obj, mime::MIME = MIME("text/plain"); kwargs...)
+function power_summary_into_buf(obj; kwargs...)
     buf = IOBuffer()
     power_summary(buf, obj; kwargs...)
     return seekstart(buf)
