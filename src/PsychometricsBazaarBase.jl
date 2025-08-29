@@ -8,6 +8,8 @@ public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions,
 export power_summary, show_into_string, show_into_buf, power_summary_into_string,
        power_summary_into_buf
 
+using Distributions: Distribution
+
 """
 power_summary(io::IO, obj::Any; kwargs...)
 
@@ -38,6 +40,16 @@ module PowerSummaryDispatchSugar
         end
         power_summary_into_string(obj; kwargs...)
     end
+end
+
+function power_summary(io::IO, obj::Distribution; kwargs...)
+    print(io, replace(
+        show_into_string(obj),
+        # Get rid of type parameters
+        r"{[^\]]+}" => "",
+        # Remove module paths
+        r"^([^\.\(]+\.)*\.([^\(]+)\(}" => s"\2",
+    ))
 end
 
 function show_into_string(obj, mime::MIME = MIME("text/plain"); kwargs...)
