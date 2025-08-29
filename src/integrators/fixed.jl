@@ -138,12 +138,14 @@ function show(io::IO, ::MIME"text/plain", integrator::Union{FixedGridIntegrator,
         println(io, "  End: ", last(integrator.grid))
         println(io, "  Step size: ", step(integrator.grid))
     else
-        println(io, "  Grid:")
-        buf = IOBuffer()
-        show(IOContext(buf, :limit => true, :displaysize => (10, 10)), MIME("text/plain"), integrator.grid)
-        seekstart(buf)
-        for line in eachline(buf)
-            println(io, "    ", line)
+        if integrator.grid isa AbstractVector
+            println(io, "  Minimum: ", minimum(integrator.grid))
+            println(io, "  Maximum: ", maximum(integrator.grid))
+        else
+            minima = minimum(integrator.grid, dims=1)
+            println(io, "  Minima: ", join(minima, ", "))
+            maxima = maximum(integrator.grid, dims=1)
+            println(io, "  Maxima: ", join(maxima, ", "))
         end
     end
 end
