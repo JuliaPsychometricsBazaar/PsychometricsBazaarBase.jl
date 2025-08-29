@@ -107,7 +107,13 @@ function Base.write(iw::IndentWrapper, str::Union{SubString{String}, String})
     write_count
 end
 
-function Base.write(iw::IndentWrapper, from::AbstractVector{UInt8})
+# Overloading the following method with AbstractVector or StridedVector causes a
+# lot of ambiguities because these are open to extension by other packages
+# (via DenseArray, etc.) who overwrite Base.write(...). This is a closed subset
+# of StridedVector
+ClosedStridedVector{T} = Union{Vector{T}, Base.StridedSubArray{T,1}, Base.StridedReshapedArray{T,1}, Base.StridedReinterpretArray{T,1}}
+
+function Base.write(iw::IndentWrapper, from::ClosedStridedVector{UInt8})
     _check_need_indent(iw)
     write_count = 0
     line_start = 1
@@ -135,10 +141,6 @@ function Base.write(iw::IndentWrapper, from::AbstractVector{UInt8})
         line_start = line_end + 1
     end
     write_count
-end
-
-function Base.write(to::IndentWrapper, from::StridedVector{UInt8})
-    return invoke(Base.write, Tuple{IndentWrapper, AbstractVector{UInt8}}, to, from)
 end
 
 # Override dispatching to Base.write(::IO, ::GenericIOBuffer) which uses raw writing
