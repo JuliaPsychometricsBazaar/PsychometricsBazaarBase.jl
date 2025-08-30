@@ -119,6 +119,7 @@ struct IterativeFixedGridIntegrator{ContainerT <:
     grid::ContainerT
 end
 
+
 function (integrator::IterativeFixedGridIntegrator)(f::F, ncomp = nothing) where {F}
     s = sum(f, integrator.grid)
     BareIntegrationResult(s)
@@ -137,12 +138,14 @@ function show(io::IO, ::MIME"text/plain", integrator::Union{FixedGridIntegrator,
         println(io, "  End: ", last(integrator.grid))
         println(io, "  Step size: ", step(integrator.grid))
     else
-        println(io, "  Grid:")
-        buf = IOBuffer()
-        show(IOContext(buf, :limit => true, :displaysize => (10, 10)), MIME("text/plain"), integrator.grid)
-        seekstart(buf)
-        for line in eachline(buf)
-            println(io, "    ", line)
+        if integrator.grid isa AbstractVector
+            println(io, "  Minimum: ", minimum(integrator.grid))
+            println(io, "  Maximum: ", maximum(integrator.grid))
+        else
+            minima = minimum(integrator.grid, dims=1)
+            println(io, "  Minima: ", join(minima, ", "))
+            maxima = maximum(integrator.grid, dims=1)
+            println(io, "  Maxima: ", join(maxima, ", "))
         end
     end
 end
@@ -166,3 +169,12 @@ function (integrator::MidpointIntegrator)(f::F, ncomp = nothing) where {F}
     s = integrator.buf[1] + 2 * sum(integrator.buf[2 : end - 1]) + integrator.buf[end]
     BareIntegrationResult(s)
 end
+
+# Generic interface
+
+get_grid(integrator::FixedGridIntegrator) = integrator.grid
+get_grid(integrator::PreallocatedFixedGridIntegrator) = integrator.inner.grid
+get_grid(integrator::IterativeFixedGridIntegrator) = integrator.grid
+get_grid(integrator::MidpointIntegrator) = integrator.xs
+
+AnyGridIntegrator = Union{FixedGridIntegrator, IterativeFixedGridIntegrator, PreallocatedFixedGridIntegrator, MidpointIntegrator}

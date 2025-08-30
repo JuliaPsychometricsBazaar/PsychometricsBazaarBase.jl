@@ -10,6 +10,8 @@ export CubaVegas, CubaSuave, CubaDivonne, CubaCuhre
 export IntReturnType, IntValue, IntMeasurement
 export CubaIntegrator, CubaVegas, CubaSuave, CubaDivonne, CubaCuhre
 export FixedGridIntegrator, PreallocatedFixedGridIntegrator
+export IterativeFixedGridIntegrator, MidpointIntegrator
+export get_grid, AnyGridIntegrator
 export even_grid, quasimontecarlo_grid
 export AbstractIntegrationResult
 export BareIntegrationResult, ErrorIntegrationResult

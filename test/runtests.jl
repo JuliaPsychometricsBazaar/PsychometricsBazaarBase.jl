@@ -11,3 +11,7 @@ end
 @testset "smoke" begin
     include("./smoke.jl")
 end
+
+@testset "indentwrappers" begin
+    include("./indentwrappers.jl")
+end
