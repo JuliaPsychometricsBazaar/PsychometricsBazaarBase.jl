@@ -25,7 +25,7 @@ function power_summary(io::IO, obj::Distribution; kwargs...)
     print(io, replace(
         show_into_string(obj),
         # Get rid of type parameters
-        r"{[^\]]+}" => "",
+        r"{[^\}]+}" => "",
         # Remove module paths
         r"^([^\.\(]+\.)*\.([^\(]+)\(}" => s"\2",
     ))
