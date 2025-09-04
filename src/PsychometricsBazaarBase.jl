@@ -24,10 +24,8 @@ function power_summary end
 function power_summary(io::IO, obj::Distribution; kwargs...)
     print(io, replace(
         show_into_string(obj),
-        # Get rid of type parameters
-        r"{[^\}]+}" => "",
-        # Remove module paths
-        r"^([^\.\(]+\.)*\.([^\(]+)\(}" => s"\2",
+        # Remove module paths and type parameters
+        r"^([^\.\(]+\.)*([^\(\{}]+){[^\}]+}\(" => s"\2(",
     ))
 end
 
