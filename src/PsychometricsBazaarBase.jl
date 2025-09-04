@@ -56,7 +56,7 @@ module PowerSummaryDispatchSugar
     function power_summary(io::IO, obj; kwargs...)
         if parentmodule(which(power_summary, Tuple{typeof(obj)})) == PowerSummaryDispatchSugar
             # Pretend this method wasn't found
-            throw(MethodError(power_summary, (IO, typeof(obj),)))
+            throw(MethodError(power_summary, (io, obj,)))
         end
         print(io, power_summary(obj))
     end
@@ -64,7 +64,7 @@ module PowerSummaryDispatchSugar
     function power_summary(obj; kwargs...)
         if parentmodule(which(power_summary, Tuple{IO, typeof(obj)})) == PowerSummaryDispatchSugar
             # Pretend this method wasn't found
-            throw(MethodError(power_summary, (typeof(obj),)))
+            throw(MethodError(power_summary, (obj,)))
         end
         power_summary_into_string(obj; kwargs...)
     end
