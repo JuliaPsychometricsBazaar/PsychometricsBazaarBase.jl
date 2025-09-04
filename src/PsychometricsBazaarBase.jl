@@ -6,7 +6,7 @@ public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions,
        Interpolators, Optimizers
 
 export power_summary, show_into_string, show_into_buf, power_summary_into_string,
-       power_summary_into_buf
+       power_summary_into_buf, GridSummary
 
 using Distributions: Distribution
 
@@ -47,6 +47,31 @@ function power_summary_into_buf(obj; kwargs...)
     buf = IOBuffer()
     power_summary(buf, obj; kwargs...)
     return seekstart(buf)
+end
+
+struct GridSummary{T}
+    grid::T
+end
+
+function power_summary(io::IO, wrapper::GridSummary)
+    grid = wrapper.grid
+    println(io, "Number of points: ", length(grid))
+    println(io, "Dimensions: ", length(grid[1]))
+    if grid isa AbstractRange
+        println(io, "Start: ", first(grid))
+        println(io, "End: ", last(grid))
+        println(io, "Step size: ", step(grid))
+    else
+        if grid isa AbstractVector
+            println(io, "Minimum: ", minimum(grid))
+            println(io, "Maximum: ", maximum(grid))
+        else
+            minima = minimum(grid, dims=1)
+            println(io, "Minima: ", join(minima, ", "))
+            maxima = maximum(grid, dims=1)
+            println(io, "Maxima: ", join(maxima, ", "))
+        end
+    end
 end
 
 module PowerSummaryDispatchSugar

@@ -125,29 +125,13 @@ function (integrator::IterativeFixedGridIntegrator)(f::F, ncomp = nothing) where
     BareIntegrationResult(s)
 end
 
-function show(io::IO, ::MIME"text/plain", integrator::Union{FixedGridIntegrator, IterativeFixedGridIntegrator})
+function power_summary(io::IO, integrator::Union{FixedGridIntegrator, IterativeFixedGridIntegrator})
     if integrator.grid isa AbstractRange
         println(io, "Fixed step grid integrator:")
     else
         println(io, "Array-based grid integrator:")
     end
-    println(io, "  Number of integration points: ", length(integrator.grid))
-    println(io, "  Dimensions: ", length(integrator.grid[1]))
-    if integrator.grid isa AbstractRange
-        println(io, "  Start: ", first(integrator.grid))
-        println(io, "  End: ", last(integrator.grid))
-        println(io, "  Step size: ", step(integrator.grid))
-    else
-        if integrator.grid isa AbstractVector
-            println(io, "  Minimum: ", minimum(integrator.grid))
-            println(io, "  Maximum: ", maximum(integrator.grid))
-        else
-            minima = minimum(integrator.grid, dims=1)
-            println(io, "  Minima: ", join(minima, ", "))
-            maxima = maximum(integrator.grid, dims=1)
-            println(io, "  Maxima: ", join(maxima, ", "))
-        end
-    end
+    power_summary(indent(io, 2), GridSummary(integrator.grid))
 end
 
 show(io::IO, ::MIME"text/plain", integrator::PreallocatedFixedGridIntegrator) = show(io, MIME("text/plain"), integrator)

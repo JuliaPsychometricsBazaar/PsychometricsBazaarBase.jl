@@ -17,6 +17,8 @@ export AbstractIntegrationResult
 export BareIntegrationResult, ErrorIntegrationResult
 import Base: show
 
+using ..PsychometricsBazaarBase: GridSummary
+import ..power_summary
 using ..ConfigTools
 using ..IntegralCoeffs: one
 using ..IndentWrappers: indent
