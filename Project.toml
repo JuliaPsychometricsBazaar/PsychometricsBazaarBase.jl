@@ -1,6 +1,6 @@
 name = "PsychometricsBazaarBase"
 uuid = "b0d9cada-d963-45e9-a4c6-4746243987f1"
-version = "0.8.6"
+version = "0.8.7"
 authors = ["Frankie Robertson <frankie@robertson.name>"]
 
 [workspace]
