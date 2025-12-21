@@ -30,10 +30,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-downgrade-compat@v2
-        if: ${{ matrix.version == '1.12' }}
-        with:
-          skip: LinearAlgebra
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
         run: julia --project=. -e 'using Pkg; Pkg.test()'
