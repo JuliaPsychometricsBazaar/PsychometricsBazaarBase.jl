@@ -24,10 +24,11 @@ return `nothing`. Otherwise, execution continues.
 macro requiresome(assign)
     @capture(assign, name_=expr_) || error("@requiresome must be passed an assignment")
     quote
-        $(esc(assign))
-        if $(esc(name)) === nothing
+        result = $(esc(expr))
+        if result === nothing
             return nothing
         end
+        $(esc(name)) = result
     end
 end
 
