@@ -66,7 +66,11 @@ Base.pipe_reader(iw::IndentWrapper) = iw.parent
 Base.pipe_writer(iw::IndentWrapper) = iw.parent
 Base.lock(iw::IndentWrapper) = lock(iw.parent)
 Base.unlock(iw::IndentWrapper) = unlock(iw.parent)
-Base.displaysize(iw::IndentWrapper) = displaysize(iw.parent)
+
+function Base.displaysize(iw::IndentWrapper)
+    lines, cols = displaysize(iw.parent)
+    return (lines, cols - iw.spaces)
+end
 
 ####
 #### capture '\n' and indent

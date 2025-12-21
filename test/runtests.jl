@@ -15,3 +15,7 @@ end
 @testset "indentwrappers" begin
     include("./indentwrappers.jl")
 end
+
+@testset "power summary" begin
+    include("./power_summary.jl")
+end

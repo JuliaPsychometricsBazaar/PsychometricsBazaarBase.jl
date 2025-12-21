@@ -31,7 +31,8 @@ end
     @test haskey(iw, :foo)
     @test !haskey(iw, :bar)
     @test iw[:foo] == io[:foo]
-    @test displaysize(iw) == displaysize(stdout)
+    (stdout_rows, stdout_cols) = displaysize(stdout)
+    @test displaysize(iw) == (stdout_rows, stdout_cols - 5)
     @test get(iw, :foo, 9) == get(io, :foo, 9)
     @test get(iw, :bar, 9) == get(io, :bar, 9)
 end

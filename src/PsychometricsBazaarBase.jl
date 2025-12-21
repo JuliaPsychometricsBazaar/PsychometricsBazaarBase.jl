@@ -6,7 +6,7 @@ public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions,
        Interpolators, Optimizers
 
 export power_summary, show_into_string, show_into_buf, power_summary_into_string,
-       power_summary_into_buf
+       power_summary_into_buf, GridSummary
 
 using Distributions: Distribution
 
@@ -24,10 +24,8 @@ function power_summary end
 function power_summary(io::IO, obj::Distribution; kwargs...)
     print(io, replace(
         show_into_string(obj),
-        # Get rid of type parameters
-        r"{[^\]]+}" => "",
-        # Remove module paths
-        r"^([^\.\(]+\.)*\.([^\(]+)\(}" => s"\2",
+        # Remove module paths and type parameters
+        r"^([^\.\(]+\.)*([^\(\{}]+){[^\}]+}\(" => s"\2(",
     ))
 end
 
@@ -51,6 +49,31 @@ function power_summary_into_buf(obj; kwargs...)
     return seekstart(buf)
 end
 
+struct GridSummary{T}
+    grid::T
+end
+
+function power_summary(io::IO, wrapper::GridSummary)
+    grid = wrapper.grid
+    println(io, "Number of points: ", length(grid))
+    println(io, "Dimensions: ", length(grid[1]))
+    if grid isa AbstractRange
+        println(io, "Start: ", first(grid))
+        println(io, "End: ", last(grid))
+        println(io, "Step size: ", step(grid))
+    else
+        if grid isa AbstractVector
+            println(io, "Minimum: ", minimum(grid))
+            println(io, "Maximum: ", maximum(grid))
+        else
+            minima = minimum(grid, dims=1)
+            println(io, "Minima: ", join(minima, ", "))
+            maxima = maximum(grid, dims=1)
+            println(io, "Maxima: ", join(maxima, ", "))
+        end
+    end
+end
+
 module PowerSummaryDispatchSugar
     using ..PsychometricsBazaarBase: power_summary_into_string
     import ..power_summary
@@ -58,7 +81,7 @@ module PowerSummaryDispatchSugar
     function power_summary(io::IO, obj; kwargs...)
         if parentmodule(which(power_summary, Tuple{typeof(obj)})) == PowerSummaryDispatchSugar
             # Pretend this method wasn't found
-            throw(MethodError(power_summary, (IO, typeof(obj),)))
+            throw(MethodError(power_summary, (io, obj,)))
         end
         print(io, power_summary(obj))
     end
@@ -66,7 +89,7 @@ module PowerSummaryDispatchSugar
     function power_summary(obj; kwargs...)
         if parentmodule(which(power_summary, Tuple{IO, typeof(obj)})) == PowerSummaryDispatchSugar
             # Pretend this method wasn't found
-            throw(MethodError(power_summary, (typeof(obj),)))
+            throw(MethodError(power_summary, (obj,)))
         end
         power_summary_into_string(obj; kwargs...)
     end
@@ -80,5 +103,6 @@ include("./integrators/Integrators.jl")
 include("./ConstDistributions.jl")
 include("./Interpolators.jl")
 include("./optimizers/Optimizers.jl")
+include("./Differentiation.jl")
 
 end
