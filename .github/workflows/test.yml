@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.11'
+          - '1.12'
         os:
           - ubuntu-latest
         arch:
@@ -30,10 +30,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-downgrade-compat@v1
-        if: ${{ matrix.version == '1.10' }}
-        with:
-          skip: LinearAlgebra
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
         run: julia --project=. -e 'using Pkg; Pkg.test()'

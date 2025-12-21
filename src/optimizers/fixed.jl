@@ -1,3 +1,5 @@
+using QuasiMonteCarlo
+
 struct FixedGridOptimizer{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
        Optimizer
     grid::ContainerT

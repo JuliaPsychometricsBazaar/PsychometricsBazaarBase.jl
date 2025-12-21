@@ -7,6 +7,9 @@ using PsychometricsBazaarBase
         target_modules = (
             PsychometricsBazaarBase,
         ),
+        ignored_modules = (
+            PsychometricsBazaarBase.Parameters,
+        ),
         mode = :typo
     )
     @show rep
