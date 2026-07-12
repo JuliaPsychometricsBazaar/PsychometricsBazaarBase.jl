@@ -3,6 +3,7 @@ using QuadGK: cachedrule, evalrule, Segment
 using LinearAlgebra: norm
 using FillArrays
 import Base.Iterators
+using OhMyThreads: TaskLocalValue
 
 function fixed_gk(f::F, lo, hi, n) where {F}
     x, w, gw = cachedrule(Float64, n)
@@ -23,19 +24,11 @@ $(TYPEDFIELDS)
     rtol::T = 1e-4
 end
 
-# This could be unsafe if quadgk performed i/o. It might be wise to switch to
-# explicitly passing this through from the caller at some point.
 # Just preallocate an arbitrary size for now (easiest, would make more sense to use 'order' somehow but we don't have it)
 # It's 24 * 100 * threads bytes, ~10kb for 4 threads which is unconditionally allocated when this library is used
-const segbufs_f64 = [Vector{Segment{Float64, Float64, Float64}}(undef, 100)
-               for _ in Threads.nthreads()]
-const segbufs_f32 = [Vector{Segment{Float32, Float32, Float32}}(undef, 100)
-               for _ in Threads.nthreads()]
-
-
-grab_segbuf(::QuadGKIntegrator{Float64}) = segbufs_f64[Threads.threadid()]
-grab_segbuf(::QuadGKIntegrator{Float32}) = segbufs_f32[Threads.threadid()]
-grab_segbuf(::QuadGKIntegrator) = nothing
+function grab_segbuf(::QuadGKIntegrator{T}) where {T}
+    return TaskLocalValue{Vector{Segment{T, T, T}}}(() => Vector{Segment{T, T, T}}(undef, 100))
+end
 
 """
     (integrator::QuadGKIntegrator)(f[, ncomp, lo, hi; order=..., rtol=...])
