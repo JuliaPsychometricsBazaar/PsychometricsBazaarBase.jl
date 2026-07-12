@@ -27,7 +27,7 @@ end
 # Just preallocate an arbitrary size for now (easiest, would make more sense to use 'order' somehow but we don't have it)
 # It's 24 * 100 * threads bytes, ~10kb for 4 threads which is unconditionally allocated when this library is used
 function grab_segbuf(::QuadGKIntegrator{T}) where {T}
-    return TaskLocalValue{Vector{Segment{T, T, T}}}(() => Vector{Segment{T, T, T}}(undef, 100))
+    return TaskLocalValue{Vector{Segment{T, T, T}}}(() -> Vector{Segment{T, T, T}}(undef, 100))
 end
 
 """
@@ -47,7 +47,7 @@ function (integrator::QuadGKIntegrator)(
         error("QuadGKIntegrator only supports ncomp == 0")
     end
     ErrorIntegrationResult(quadgk(
-        f, lo, hi, rtol = rtol, segbuf = grab_segbuf(integrator), order = order)...)
+        f, lo, hi, rtol = rtol, segbuf = grab_segbuf(integrator)[], order = order)...)
 end
 
 """
