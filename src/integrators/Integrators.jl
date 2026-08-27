@@ -13,12 +13,13 @@ export FixedGridIntegrator, PreallocatedFixedGridIntegrator
 export IterativeFixedGridIntegrator, MidpointIntegrator
 export get_grid, AnyGridIntegrator
 export even_grid, quasimontecarlo_grid
-export AbstractIntegrationResult
+export AbstractIntegrationResult, preallocate
 export BareIntegrationResult, ErrorIntegrationResult
 import Base: show
 
 using ..PsychometricsBazaarBase: GridSummary
 import ..power_summary
+import ..preallocate
 using ..ConfigTools
 using ..IntegralCoeffs: one
 using ..IndentWrappers: indent
