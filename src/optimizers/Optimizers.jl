@@ -6,6 +6,7 @@ module Optimizers
 
 export FixedGridOptimizer, even_grid, quasimontecarlo_grid
 export Optimizer, OneDimOptimOptimizer, MultiDimOptimOptimizer
+export PreallocatedOptimOptimizer, preallocate
 export
 # Optimization algorithms
 ## Zeroth order methods (heuristics)
@@ -58,8 +59,10 @@ export
 
 using ..ConfigTools
 using ..Parameters
+import ..preallocate
 
 using Optim
+using Optim: NLSolversBase
 using DocStringExtensions
 
 abstract type Optimizer end
@@ -105,7 +108,7 @@ function (opt::OneDimOptimOptimizer{<: IPNewton})(
     ))[1]
 end
 
-function (opt::OneDimOptimOptimizer{<: NelderMead})(
+function (opt::OneDimOptimOptimizer)(
         f::F;
         lo = opt.lo,
         hi = opt.hi,
@@ -113,14 +116,7 @@ function (opt::OneDimOptimOptimizer{<: NelderMead})(
         optim = opt.optim,
         opts = opt.opts
 ) where {F}
-    Optim.minimizer(optimize(
-        θ_arr -> -f(first(θ_arr)),
-        lo,
-        hi,
-        [initial],
-        optim,
-        opts
-    ))[1]
+    _optimize_box(θ_arr -> -f(first(θ_arr)), [lo], [hi], [initial], optim, opts)[1]
 end
 
 """
@@ -148,15 +144,30 @@ function (opt::MultiDimOptimOptimizer)(
         optim = opt.optim,
         opts = opt.opts
 ) where {F}
-    Optim.minimizer(optimize(
-        θ_arr -> -f(θ_arr),
-        lo,
-        hi,
-        initial,
-        optim,
-        opts
-    ))
+    _optimize_box(θ_arr -> -f(θ_arr), lo, hi, copy(initial), optim, opts)
 end
+
+"""
+$(SIGNATURES)
+
+Minimize `f` within the box `[lo, hi]` using an Optim.jl method.
+
+The bounds are applied with `Optim.Fminbox`, apart from methods which handle
+box constraints themselves. An entirely infinite box means the method runs
+unconstrained.
+"""
+function _optimize_box(f::F, lo, hi, initial, optim, opts) where {F}
+    if _unbounded(lo, hi)
+        Optim.minimizer(optimize(f, initial, optim, opts))
+    else
+        Optim.minimizer(optimize(f, lo, hi, initial, _box_method(optim), opts))
+    end
+end
+
+_unbounded(lo, hi) = all(==(-Inf), lo) && all(==(Inf), hi)
+
+_box_method(optim::Optim.AbstractOptimizer) = Fminbox(optim)
+_box_method(optim::Optim.AbstractConstrainedOptimizer) = optim
 
 @kwdef struct NativeOneDimOptimOptimizer{T, MethodT <: Union{Brent,GoldenSection}} <: Optimizer
     lo::T
@@ -187,5 +198,6 @@ function (opt::NativeOneDimOptimOptimizer)(
 end
 
 include("./fixed.jl")
+include("./preallocated.jl")
 
 end

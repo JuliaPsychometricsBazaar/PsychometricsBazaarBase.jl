@@ -6,7 +6,7 @@ public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions,
        Interpolators, Optimizers
 
 export power_summary, show_into_string, show_into_buf, power_summary_into_string,
-       power_summary_into_buf, GridSummary
+       power_summary_into_buf, GridSummary, preallocate
 
 using Distributions: Distribution
 
@@ -20,6 +20,18 @@ All arguments are passed by kwargs which may vary by the type of `obj`.
 In practice, show(::IO, MIME"text/plain", obj) may use this internally.
 """
 function power_summary end
+
+"""
+preallocate(obj::Any)
+
+Return a version of `obj` which allocates its working memory once, up front,
+rather than on each call.
+
+The returned object must give the same results as `obj`, but is not safe to
+share between threads or tasks. Types with nothing to preallocate return
+themselves unchanged.
+"""
+function preallocate end
 
 function power_summary(io::IO, obj::Distribution; kwargs...)
     print(io, replace(
