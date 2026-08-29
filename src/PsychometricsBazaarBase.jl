@@ -3,7 +3,7 @@ module PsychometricsBazaarBase
 using DocStringExtensions
 
 public Parameters, ConfigTools, IntegralCoeffs, Integrators, ConstDistributions,
-       Interpolators, Optimizers
+       Interpolators, Optimizers, IntervalUnions
 
 export power_summary, show_into_string, show_into_buf, power_summary_into_string,
        power_summary_into_buf, GridSummary, preallocate
@@ -109,6 +109,7 @@ end
 
 include("./vendor/IndentWrappers.jl")
 include("./vendor/Parameters.jl")
+include("./vendor/IntervalUnions.jl")
 include("./ConfigTools.jl")
 include("./IntegralCoeffs.jl")
 include("./integrators/Integrators.jl")
