@@ -5,9 +5,9 @@ Construct a Cubature integrator based on `HCubature.jl` with on a specified inte
 
 $(TYPEDFIELDS)
 """
-struct HCubatureIntegrator{KwargsT} <: Integrator
-    lo::Vector{Float64}
-    hi::Vector{Float64}
+struct HCubatureIntegrator{LoT <: AbstractVector, HiT <: AbstractVector, KwargsT} <: Integrator
+    lo::LoT
+    hi::HiT
     kwargs::KwargsT
 end
 

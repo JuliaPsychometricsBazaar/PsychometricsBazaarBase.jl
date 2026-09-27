@@ -1,16 +1,8 @@
 using QuasiMonteCarlo
 
-struct FixedGridIntegrator{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
+struct FixedGridIntegrator{ContainerT <: AbstractVector} <:
        Integrator
     grid::ContainerT
-
-    function FixedGridIntegrator(grid)
-        new{Vector{Float64}}(grid)
-    end
-
-    function FixedGridIntegrator(grid::Vector{Vector{Float64}})
-        new{Vector{Vector{Float64}}}(grid)
-    end
 end
 
 function even_grid(theta_lo::Number, theta_hi::Number, quadpts)
@@ -38,30 +30,29 @@ function (integrator::FixedGridIntegrator)(args...; kwargs...)
     preallocate(integrator)(args...; kwargs...)
 end
 
-struct PreallocatedFixedGridIntegrator{ContainerT <:
-                                       Union{Vector{Float64}, Matrix{Float64}},
+struct PreallocatedFixedGridIntegrator{ContainerT <: AbstractArray,
                                        FixedGridIntegratorT <: FixedGridIntegrator} <:
        Integrator
     inner::FixedGridIntegratorT
     buf::ContainerT
 
-    function PreallocatedFixedGridIntegrator(inner::FixedGridIntegrator{Vector{Float64}})
+    function PreallocatedFixedGridIntegrator(inner::FixedGridIntegrator{<:AbstractVector{<:Number}})
         quadpts = length(inner.grid)
-        buf = Vector{Float64}(undef, quadpts)
-        new{Vector{Float64}, FixedGridIntegrator{Vector{Float64}}}(inner, buf)
+        buf = Vector{float(eltype(inner.grid))}(undef, quadpts)
+        new{typeof(buf), typeof(inner)}(inner, buf)
     end
 
-    function PreallocatedFixedGridIntegrator(inner::FixedGridIntegrator{Vector{Vector{Float64}}})
+    function PreallocatedFixedGridIntegrator(inner::FixedGridIntegrator{<:AbstractVector{<:AbstractVector}})
         quadpts = length(inner.grid)
         # XXX: In general this is wrong. The output dimension could be anything.
         # TODO: Instead it be that we have a maximum output dimension specified at construction time
         dim = length(inner.grid[1])
-        buf = Matrix{Float64}(undef, quadpts, dim)
-        new{Matrix{Float64}, FixedGridIntegrator{Vector{Vector{Float64}}}}(inner, buf)
+        buf = Matrix{float(eltype(eltype(inner.grid)))}(undef, quadpts, dim)
+        new{typeof(buf), typeof(inner)}(inner, buf)
     end
 end
 
-function (integrator::PreallocatedFixedGridIntegrator{Vector{Float64}})(
+function (integrator::PreallocatedFixedGridIntegrator{<:AbstractVector})(
     f::F,
     ncomp::Int = 0
 ) where {F}
@@ -69,11 +60,11 @@ function (integrator::PreallocatedFixedGridIntegrator{Vector{Float64}})(
         integrator.buf .= f.(integrator.inner.grid)
         BareIntegrationResult(sum(integrator.buf))
     else
-        error("ncomp must be 0 or 1 for FixedGridIntegrator with Vector{Float64} buffer")
+        error("ncomp must be 0 or 1 for FixedGridIntegrator with a vector buffer")
     end
 end
 
-function (integrator::PreallocatedFixedGridIntegrator{Matrix{Float64}})(
+function (integrator::PreallocatedFixedGridIntegrator{<:AbstractMatrix})(
     f::F,
     ncomp::Int = 0
 ) where {F}
@@ -89,7 +80,7 @@ end
 
 function (integrator::PreallocatedFixedGridIntegrator)(
         f::F,
-        init::AbstractVector{Float64},
+        init::AbstractVector,
         ncomp::Int = 0
 ) where {F}
     if ncomp == 0
@@ -113,8 +104,7 @@ function preallocate(integrator::Integrator)
     integrator
 end
 
-struct IterativeFixedGridIntegrator{ContainerT <:
-                                    Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
+struct IterativeFixedGridIntegrator{ContainerT <: AbstractVector} <:
        Integrator
     grid::ContainerT
 end
@@ -136,13 +126,13 @@ end
 
 show(io::IO, ::MIME"text/plain", integrator::PreallocatedFixedGridIntegrator) = show(io, MIME("text/plain"), integrator)
 
-struct MidpointIntegrator <: Integrator
-    xs::Vector{Float64}
-    buf::Vector{Float64}
+struct MidpointIntegrator{XsT <: AbstractVector, BufT <: AbstractVector} <: Integrator
+    xs::XsT
+    buf::BufT
 
     function MidpointIntegrator(xs)
-        buf = Vector{Float64}(undef, length(xs))
-        new(xs, buf)
+        buf = Vector{float(eltype(xs))}(undef, length(xs))
+        new{typeof(xs), typeof(buf)}(xs, buf)
     end
 end
 

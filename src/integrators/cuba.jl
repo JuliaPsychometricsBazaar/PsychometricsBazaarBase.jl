@@ -40,9 +40,9 @@ CubaIntegrator([0.0, 0.0], [1.0, 1.0], CubaVegas()) do x
 end
 ```
 """
-struct CubaIntegrator{AlgorithmT <: CubaAlgorithm, KwargsT} <: Integrator
-    lo::Vector{Float64}
-    hi::Vector{Float64}
+struct CubaIntegrator{AlgorithmT <: CubaAlgorithm, LoT <: AbstractVector, HiT <: AbstractVector, KwargsT} <: Integrator
+    lo::LoT
+    hi::HiT
     algorithm::AlgorithmT
     kwargs::KwargsT
 end
