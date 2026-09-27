@@ -5,3 +5,9 @@ JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 PsychometricsBazaarBase = "b0d9cada-d963-45e9-a4c6-4746243987f1"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+Aqua = "0.8.18"
+Distributions = "^0.25.49"
+JET = "0.11.5"
+Optim = "^1.6.2, 2"
