@@ -5,9 +5,9 @@ Construct a Cubature integrator based on `Cubature.jl` with on a specified inter
 
 $(TYPEDFIELDS)
 """
-struct CubatureIntegrator{KwargsT} <: Integrator
-    lo::Vector{Float64}
-    hi::Vector{Float64}
+struct CubatureIntegrator{LoT <: AbstractVector, HiT <: AbstractVector, KwargsT} <: Integrator
+    lo::LoT
+    hi::HiT
     kwargs::KwargsT
 end
 

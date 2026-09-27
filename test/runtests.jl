@@ -12,6 +12,10 @@ end
     include("./smoke.jl")
 end
 
+@testset "generic numeric types" begin
+    include("./generic_types.jl")
+end
+
 @testset "optimizers" begin
     include("./optimizers.jl")
 end
