@@ -1,16 +1,8 @@
 using QuasiMonteCarlo
 
-struct FixedGridOptimizer{ContainerT <: Union{Vector{Float64}, Vector{Vector{Float64}}}} <:
+struct FixedGridOptimizer{ContainerT <: AbstractVector} <:
        Optimizer
     grid::ContainerT
-
-    function FixedGridOptimizer(grid)
-        new{Vector{Float64}}(grid)
-    end
-
-    function FixedGridOptimizer(grid::Vector{Vector{Float64}})
-        new{Vector{Vector{Float64}}}(grid)
-    end
 end
 
 function even_grid(theta_lo::Number, theta_hi::Number, quadpts)

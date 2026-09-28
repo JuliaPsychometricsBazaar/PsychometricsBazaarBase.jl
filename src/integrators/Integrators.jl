@@ -58,19 +58,20 @@ function normdenom(rett::IntReturnType, integrator::Integrator;
     rett(integrator(one; lo = lo, hi = hi, options...))
 end
 
-struct ScaleUnitDomain{F}
+struct ScaleUnitDomain{F, LoT, IntervalT, ScalerT}
     f::F
-    lo::Vector{Float64}
-    interval::Vector{Float64}
-    scaler::Float64
+    lo::LoT
+    interval::IntervalT
+    scaler::ScalerT
 
     function ScaleUnitDomain(f::F, lo, hi) where {F}
         interval = hi .- lo
-        new{F}(
+        scaler = prod(interval)
+        new{F, typeof(lo), typeof(interval), typeof(scaler)}(
             f,
             lo,
             interval,
-            prod(interval)
+            scaler
         )
     end
 end

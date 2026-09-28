@@ -14,9 +14,8 @@ using DocStringExtensions
 """
 $(SIGNATURES)
 """
-@inline function one(x_)::Float64
-    1.0
-end
+@inline one(x::Number) = Base.one(x)
+@inline one(x::AbstractArray) = Base.one(eltype(x))
 
 """
 $(SIGNATURES)

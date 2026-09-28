@@ -40,16 +40,19 @@ struct PreallocatedOptimOptimizer{
     InnerT <: Optimizer,
     NegatedT <: Union{NegatedScalarFunction, NegatedVectorFunction},
     ObjectiveT <: Optim.AbstractObjective,
-    StateT
+    StateT,
+    LoT <: AbstractVector,
+    HiT <: AbstractVector,
+    XT <: AbstractVector
 } <: Optimizer
     inner::InnerT
     negated::NegatedT
     objective::ObjectiveT
     # The Optim.jl state, or nothing when the box has to be reapplied each run
     state::StateT
-    lo::Vector{Float64}
-    hi::Vector{Float64}
-    x::Vector{Float64}
+    lo::LoT
+    hi::HiT
+    x::XT
 end
 
 """
@@ -85,7 +88,7 @@ Fallback for optimizers with nothing to preallocate.
 """
 preallocate(opt::Optimizer) = opt
 
-_zero_objective(θ_arr) = 0.0
+_zero_objective(θ_arr) = zero(eltype(θ_arr))
 
 function _preallocate_optim(opt, negated, lo, hi, x)
     if !_unbounded(lo, hi)
@@ -94,7 +97,7 @@ function _preallocate_optim(opt, negated, lo, hi, x)
         if !(_box_method(opt.optim) isa Fminbox)
             return opt
         end
-        objective = OnceDifferentiable(negated, x, 0.0; autodiff = :finite)
+        objective = OnceDifferentiable(negated, x, zero(eltype(x)); autodiff = :finite)
         return PreallocatedOptimOptimizer(opt, negated, objective, nothing, lo, hi, x)
     end
     objective = Optim.promote_objtype(opt.optim, x, :finite, true, negated)
