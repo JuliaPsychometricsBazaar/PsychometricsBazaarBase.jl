@@ -136,5 +136,6 @@ include("./hcubature.jl")
 include("./cubature.jl")
 include("./cuba.jl")
 include("./fixed.jl")
+include("./log_grid_weights.jl")
 
 end
