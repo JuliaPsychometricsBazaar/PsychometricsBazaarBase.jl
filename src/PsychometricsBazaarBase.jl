@@ -35,7 +35,7 @@ function preallocate end
 
 function power_summary(io::IO, obj::Distribution; kwargs...)
     print(io, replace(
-        show_into_string(obj),
+        sprint(show, obj),
         # Remove module paths and type parameters
         r"^([^\.\(]+\.)*([^\(\{}]+){[^\}]+}\(" => s"\2(",
     ))

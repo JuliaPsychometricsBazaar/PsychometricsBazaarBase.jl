@@ -23,3 +23,11 @@ end
 @testset "power summary" begin
     include("./power_summary.jl")
 end
+
+@testset "log grid weights" begin
+    include("./log_grid_weights.jl")
+end
+
+@testset "grid moments" begin
+    include("./grid_moments.jl")
+end
