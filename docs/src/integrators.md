@@ -60,3 +60,22 @@ semantics, with no implicit spacing factor or Bessel correction.
 
 Run `julia --project=. benchmark/grid_moments.jl` for warmed 33-, 65-, and
 129-point reductions, reporting setup cost separately from repeated calls.
+
+## Moments of transformed weights
+
+```julia
+grid = [-1.0, 0.0, 1.0]
+weights = [1.0, 2.0, 1.0]
+buffers = (similar(weights), similar(weights))
+summaries = weighted_grid_moments!(x -> (1 + x, 1 - x), grid, weights, buffers)
+summaries[1] # (mass = 4.0, mean = 0.5, variance = 0.25)
+```
+
+Each buffer stores `weights[i] * factors(grid[i])[k]`. The callback runs once per
+nonzero base weight; centered variance reuses the buffers. The optional
+`denominator` works as above.
+
+Use equally indexed, nonempty arrays and nonaliasing buffers. Weights and factors
+must be finite and nonnegative: these per-point requirements are caller
+obligations. `@inbounds` elides shape checks; aliasing and positive finite mass
+checks remain. See [`weighted_grid_moments!`](@ref PsychometricsBazaarBase.Integrators.weighted_grid_moments!) for the full contract.
