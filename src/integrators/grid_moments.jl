@@ -109,7 +109,8 @@ Buffers may be partially written on failure.
 
 Buffers retain produced weights for centered variance. The optional common
 `denominator` follows [`weighted_grid_moments`](@ref). Warmed Float32/Float64 calls
-allocate no heap storage; BigFloat arithmetic may allocate.
+allocate no heap storage; BigFloat arithmetic may allocate. Variance reductions
+may reassociate floating-point additions.
 """
 Base.@propagate_inbounds function weighted_grid_moments!(factors::F, grid::AbstractVector,
         weights::AbstractVector, buffers::NTuple{N, AbstractVector};
@@ -160,6 +161,17 @@ end
     (; mass=state.mass + w, moment=state.moment + w * (x - origin), origin)
 end
 
+@inline function centered_grid_moment(grid::AbstractVector{T}, weights::AbstractVector{W},
+        mean) where {T, W}
+    total = zero(promote_type(T, W))
+    @inbounds @simd for i in eachindex(grid)
+        w = weights[i]
+        # An unconditional addition lets LLVM recognize the reduction.
+        total += iszero(w) ? zero(total) : w * (grid[i] - mean)^2
+    end
+    total
+end
+
 Base.@propagate_inbounds function weighted_grid_moments!(factors::F, grid::AbstractVector{T},
         weights::AbstractVector, buffers::Tuple{AbstractVector{W}, Vararg{AbstractVector{W}, N}};
         denominator=nothing) where {F, N, T <: AbstractFloat, W <: AbstractFloat}
@@ -186,15 +198,9 @@ Base.@propagate_inbounds function weighted_grid_moments!(factors::F, grid::Abstr
         end
     end
     means_divisors = map(s -> grid_moment_mean(s.mass, s.moment, s.origin, denominator), states)
-    centered = ntuple(_ -> zero(promote_type(T, W)), Val(channels))
-    @inbounds for i in eachindex(grid)
-        centered = map(centered, buffers, means_divisors) do total, buffer, summary
-            @inline
-            w = @inbounds buffer[i]
-            iszero(w) ? total : total + w * (@inbounds(grid[i]) - summary[1])^2
-        end
-    end
-    map(states, means_divisors, centered) do state, summary, total
+    map(states, means_divisors, buffers) do state, summary, buffer
+        @inline
+        total = centered_grid_moment(grid, buffer, summary[1])
         (; mass=state.mass, mean=summary[1], variance=total / summary[2])
     end
 end
