@@ -64,19 +64,17 @@ Run `julia --project=. benchmark/grid_moments.jl` for warmed 33-, 65-, and
 ## Moments of transformed weights
 
 ```julia
+grid = [-1.0, 0.0, 1.0]
+weights = [1.0, 2.0, 1.0]
 buffers = (similar(weights), similar(weights))
-summaries = weighted_grid_moments!(x -> (exp(x), exp(-x)), grid, weights, buffers)
-# summaries[1].mean, summaries[2].variance
+summaries = weighted_grid_moments!(x -> (1 + x, 1 - x), grid, weights, buffers)
+summaries[1] # (mass = 4.0, mean = 0.5, variance = 0.25)
 ```
 
-Each channel summarizes `weights[i] * factors(grid[i])[k]`. The callback runs
-once per nonzero base weight and is skipped at zero base weights. Floating-point
-arrays fuse weight production with mass/mean accumulation; a second, centered
-pass reuses the buffers. Generic arrays retain the checked summary fallback.
-An optional common `denominator` has the same semantics as above.
+Each buffer stores `weights[i] * factors(grid[i])[k]`. The callback runs once per
+nonzero base weight; centered variance reuses the buffers. The optional
+`denominator` works as above.
 
-Supply equally indexed buffers that do not alias inputs or one another, and use
-separate buffers for concurrent calls. Buffer element types determine storage
-precision. Factors and weights must be finite and nonnegative; every channel
-needs positive finite mass. Coordinates need only be finite where a produced
-weight is positive. No relaxed-math policy is enabled by this interface.
+Use equally indexed, nonempty arrays and nonaliasing buffers. Weights and factors
+must be finite and nonnegative, with positive finite channel masses. See
+[`weighted_grid_moments!`](@ref) for the full input contract.

@@ -75,35 +75,29 @@ end
 """
 $(SIGNATURES)
 
-Compute independent scalar moment summaries from transformed linear weights:
+Return a tuple of `(mass, mean, variance)` summaries, one per weight buffer:
 
 ```julia
 grid = [-1.0, 0.0, 1.0]
 weights = [1.0, 2.0, 1.0]
 buffers = (similar(weights), similar(weights))
-summaries = weighted_grid_moments!(x -> (exp(x), exp(-x)), grid, weights, buffers)
+summaries = weighted_grid_moments!(x -> (1 + x, 1 - x), grid, weights, buffers)
+summaries[1] # (mass = 4.0, mean = 0.5, variance = 0.25)
 ```
 
-`factors(x)` returns one finite nonnegative factor per buffer. It is called once
-at each nonzero base weight, and never at zero base weights. Each buffer receives
-`weights[i] * factors(grid[i])[k]`, converted to its element type. The returned
-tuple contains `(mass, mean, variance)` for each channel. An optional common
-`denominator` has the same meaning as in [`weighted_grid_moments`](@ref).
+Each buffer stores `weights[i] * factors(grid[i])[k]` in its element type.
+`factors` supplies one factor per buffer, runs once per nonzero base weight,
+and must not mutate inputs or buffers.
 
-Floating-point grids and equally typed floating-point buffers fuse weight
-production with mass/first-moment accumulation. A centered second pass reuses
-the buffers without calling `factors` again. Other arrays use the same checked
-summary after producing weights. Coordinates must be finite wherever a produced
-weight is positive; each channel must have positive finite mass. No cell width
-or Bessel correction is applied. This function consumes linear base weights;
-it does not reconstruct absolute weights from log densities.
+All arrays must have equal, nonempty axes. Supply at least one buffer; buffers
+must not alias inputs or each other, including across concurrent calls. Factors,
+base and produced weights must be finite and nonnegative, each channel's mass positive
+and finite, and coordinates finite wherever produced weights are positive.
+Buffers may be partially written on failure.
 
-All arrays must have equal axes. Buffers must not alias inputs or each other;
-use independent buffers for concurrent calls. Choose buffer types wide enough
-for the products: there is no implicit precision policy or scratch allocation.
-Buffers may be partially written if input validation or the callback throws.
-The warmed, type-stable Float32/Float64 path allocates no heap storage; BigFloat
-arithmetic may allocate. The callback must not mutate inputs or buffers.
+Buffers retain produced weights for centered variance. The optional common
+`denominator` follows [`weighted_grid_moments`](@ref). Warmed Float32/Float64 calls
+allocate no heap storage; BigFloat arithmetic may allocate.
 """
 function weighted_grid_moments!(factors::F, grid::AbstractVector,
         weights::AbstractVector, buffers::NTuple{N, AbstractVector};
