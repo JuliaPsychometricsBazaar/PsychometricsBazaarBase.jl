@@ -110,12 +110,40 @@ end
     end
 end
 
+@testset "dense and zero-weight producers preserve callback order" begin
+    for T in (Float32, Float64, BigFloat), channels in (1, 2, 3),
+            strided in (false, true), denominator in (nothing, T(4))
+        xs = collect(range(T(-4), T(4); length=33))
+        grid = strided ? view(repeat(xs; inner=2), 1:2:66) : copy(xs)
+        weights = exp.(-grid.^2)
+        buffers = ntuple(channels) do _
+            strided ? view(zeros(T, 66), 1:2:66) : zeros(T, 33)
+        end
+        # Reuse buffers while switching from dense to sparse support and back.
+        for sparse in (false, true, false)
+            grid[1] = sparse ? T(NaN) : xs[1]
+            weights[1] = sparse ? zero(T) : exp(-xs[1]^2)
+            seen = T[]
+            factors = x -> (push!(seen, x); ntuple(k -> exp(x / T(k)), channels))
+            actual = weighted_grid_moments!(factors, grid, weights, buffers; denominator)
+            @test seen == grid[findall(!iszero, weights)]
+            for (buffer, result) in zip(buffers, actual)
+                expected = weighted_grid_moments(grid, buffer; denominator)
+                for field in (:mass, :mean, :variance)
+                    @test isapprox(getproperty(result, field), getproperty(expected, field);
+                        rtol=64eps(T), atol=64eps(T))
+                end
+            end
+        end
+    end
+end
+
 function transformed_allocations(grid, weights, buffers)
     producer(x) = (exp(x), exp(-x))
     weighted_grid_moments!(producer, grid, weights, buffers)
     @allocated weighted_grid_moments!(producer, grid, weights, buffers)
 end
-@testset "fused scalar moments reuse scratch" begin
+@testset "scalar moments reuse scratch" begin
     for T in (Float32, Float64), n in (33, 65, 129)
         grid = collect(range(T(-4), T(4); length=n))
         weights = exp.(-grid.^2 / 2)
