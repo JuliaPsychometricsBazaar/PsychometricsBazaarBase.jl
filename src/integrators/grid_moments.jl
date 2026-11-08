@@ -134,7 +134,7 @@ Base.@propagate_inbounds function materialize_grid_weights!(factors::F, grid, we
         if SkipZeros && iszero(base)
             foreach(buffer -> @inbounds(buffer[i] = zero(base)), buffers)
         else
-            values = factors(@inbounds grid[i])
+            values = @inline factors(@inbounds grid[i])
             @boundscheck length(values) == N || throw(DimensionMismatch("One factor is required per buffer"))
             for k in 1:N
                 @inbounds buffers[k][i] = base * values[k]
