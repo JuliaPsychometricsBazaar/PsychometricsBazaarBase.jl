@@ -76,5 +76,6 @@ nonzero base weight; centered variance reuses the buffers. The optional
 `denominator` works as above.
 
 Use equally indexed, nonempty arrays and nonaliasing buffers. Weights and factors
-must be finite and nonnegative, with positive finite channel masses. See
-[`weighted_grid_moments!`](@ref) for the full input contract.
+must be finite and nonnegative: these per-point requirements are caller
+obligations. `@inbounds` elides shape checks; aliasing and positive finite mass
+checks remain. See [`weighted_grid_moments!`](@ref) for the full contract.

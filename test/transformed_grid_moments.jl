@@ -61,13 +61,10 @@ end
     @test_throws DimensionMismatch weighted_grid_moments!(pair, [1.], [1.], (zeros(2), zeros(1)))
     @test_throws DimensionMismatch weighted_grid_moments!(_ -> (1.,), [1.], [1.], (zeros(1), zeros(1)))
     for bad in (-1., NaN, Inf)
-        @test_throws DomainError weighted_grid_moments!(pair, [1.], [bad], (zeros(1), zeros(1)))
-        @test_throws DomainError weighted_grid_moments!(_ -> (1., bad), [1.], [1.], (zeros(1), zeros(1)))
         @test_throws DomainError weighted_grid_moments!(pair, [1.], [1.], (zeros(1), zeros(1)); denominator=bad)
     end
     @test_throws DomainError weighted_grid_moments!(pair, [1.], [1.], (zeros(1), zeros(1)); denominator=0.)
     @test_throws DomainError weighted_grid_moments!(_ -> (0., 1.), [1.], [1.], (zeros(1), zeros(1)))
-    @test_throws DomainError weighted_grid_moments!(pair, [NaN], [1.], (zeros(1), zeros(1)))
     @test_throws DomainError weighted_grid_moments!(_ -> (2.,), [1.], [floatmax()], (zeros(1),))
     input = [1.]
     @test_throws ArgumentError weighted_grid_moments!(pair, input, [1.], (input, zeros(1)))
@@ -85,5 +82,60 @@ end
         grid = collect(range(T(-4), T(4); length=n))
         weights = exp.(-grid.^2 / 2)
         @test transformed_allocations(grid, weights, (similar(weights), similar(weights))) == 0
+    end
+end
+
+# Observe shape checks on valid storage, without exercising unsafe indexing.
+struct MomentAxesProbe{T} <: AbstractVector{T}
+    data::Vector{T}
+    calls::Base.RefValue{Int}
+end
+Base.size(v::MomentAxesProbe) = size(v.data)
+Base.length(v::MomentAxesProbe) = length(v.data)
+Base.axes(v::MomentAxesProbe) = (v.calls[] += 1; axes(v.data))
+Base.eachindex(v::MomentAxesProbe) = eachindex(v.data)
+Base.getindex(v::MomentAxesProbe, i::Int) = v.data[i]
+Base.dataids(v::MomentAxesProbe) = Base.dataids(v.data)
+
+struct MomentFactorProbe
+    calls::Base.RefValue{Int}
+end
+Base.length(v::MomentFactorProbe) = (v.calls[] += 1; 2)
+Base.getindex(::MomentFactorProbe, i::Int) = (1., 2.)[i]
+
+function bounds_moments(factors::F, grid, weights, buffers, ::Val{Inbounds};
+        denominator=nothing) where {F, Inbounds}
+    if Inbounds
+        @inbounds weighted_grid_moments!(factors, grid, weights, buffers; denominator)
+    else
+        weighted_grid_moments!(factors, grid, weights, buffers; denominator)
+    end
+end
+
+@testset "shape elision retains numerical and alias checks" begin
+    for T in (Float64, Int, AbstractFloat), inbounds in (false, true)
+        axes_calls, factor_calls = Ref(0), Ref(0)
+        grid = MomentAxesProbe(T[-1, 0, 1], axes_calls)
+        weights = ones(3)
+        buffers = (zeros(3), zeros(3))
+        factors = _ -> MomentFactorProbe(factor_calls)
+        result = bounds_moments(factors, grid, weights, buffers, Val(inbounds))
+        @test result == ((mass=3., mean=0., variance=2/3), (mass=6., mean=0., variance=2/3))
+        # --check-bounds=yes must still force the checks, including under @inbounds.
+        checked = !inbounds || Base.JLOptions().check_bounds == 1
+        @test (axes_calls[] > 0) == checked
+        @test factor_calls[] == (checked ? 3 : 0)
+        @test_throws ArgumentError bounds_moments(factors, grid, weights,
+            (weights, zeros(3)), Val(inbounds))
+        @test_throws ArgumentError bounds_moments(factors, grid, weights,
+            (buffers[1], buffers[1]), Val(inbounds))
+        @test_throws DomainError bounds_moments(_ -> (0., 1.), grid, weights,
+            buffers, Val(inbounds))
+        @test_throws DomainError bounds_moments(_ -> (floatmax(), floatmax()),
+            grid, weights, buffers, Val(inbounds))
+        for denominator in (0., -1., Inf, NaN)
+            @test_throws DomainError bounds_moments(factors, grid, weights,
+                buffers, Val(inbounds); denominator)
+        end
     end
 end
