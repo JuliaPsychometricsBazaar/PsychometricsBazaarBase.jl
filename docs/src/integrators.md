@@ -78,4 +78,4 @@ nonzero base weight; centered variance reuses the buffers. The optional
 Use equally indexed, nonempty arrays and nonaliasing buffers. Weights and factors
 must be finite and nonnegative: these per-point requirements are caller
 obligations. `@inbounds` elides shape checks; aliasing and positive finite mass
-checks remain. See [`weighted_grid_moments!`](@ref) for the full contract.
+checks remain. See [`weighted_grid_moments!`](@ref PsychometricsBazaarBase.Integrators.weighted_grid_moments!) for the full contract.
