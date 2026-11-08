@@ -180,17 +180,19 @@ function weighted_grid_moments!(factors::F, grid::AbstractVector{T},
             values = factors(x)
             length(values) == channels || throw(DimensionMismatch("One factor is required per buffer"))
             factors_tuple = ntuple(k -> values[k], Val(channels))
-            states = map((buffer, factor, state) ->
-                accumulate_grid_channel!(buffer, factor, state, base, x, i),
-                buffers, factors_tuple, states)
+            states = map(buffers, factors_tuple, states) do buffer, factor, state
+                @inline
+                accumulate_grid_channel!(buffer, factor, state, base, x, i)
+            end
         end
     end
     means_divisors = map(s -> grid_moment_mean(s.mass, s.moment, s.origin, denominator), states)
     centered = ntuple(_ -> zero(promote_type(T, W)), Val(channels))
     @inbounds for i in eachindex(grid)
         centered = map(centered, buffers, means_divisors) do total, buffer, summary
-            w = buffer[i]
-            iszero(w) ? total : total + w * (grid[i] - summary[1])^2
+            @inline
+            w = @inbounds buffer[i]
+            iszero(w) ? total : total + w * (@inbounds(grid[i]) - summary[1])^2
         end
     end
     map(states, means_divisors, centered) do state, summary, total
