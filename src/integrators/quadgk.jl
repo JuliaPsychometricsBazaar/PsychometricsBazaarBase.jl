@@ -6,7 +6,7 @@ import Base.Iterators
 using OhMyThreads: TaskLocalValue
 
 function fixed_gk(f::F, lo, hi, n) where {F}
-    x, w, gw = cachedrule(Float64, n)
+    x, w, gw = cachedrule(promote_type(typeof(float(lo)), typeof(float(hi))), n)
 
     seg = evalrule(f, lo, hi, x, w, gw, norm)
     (seg.I, seg.E)
@@ -55,9 +55,9 @@ Construct a fixed-order Gauss-Kronrod integrator based on `QuadGK.jl` with on a 
 
 $(TYPEDFIELDS)
 """
-struct FixedGKIntegrator <: Integrator
-    lo::Float64
-    hi::Float64
+struct FixedGKIntegrator{LoT <: Number, HiT <: Number} <: Integrator
+    lo::LoT
+    hi::HiT
     order::Int
 end
 
@@ -85,9 +85,9 @@ Construct a fixed-order multi-dimensional Gauss-Kronrod integrator based on
 
 $(TYPEDFIELDS)
 """
-struct MultiDimFixedGKIntegrator{OrderT <: AbstractVector{Int}} <: Integrator
-    lo::Vector{Float64}
-    hi::Vector{Float64}
+struct MultiDimFixedGKIntegrator{LoT <: AbstractVector, HiT <: AbstractVector, OrderT <: AbstractVector{Int}} <: Integrator
+    lo::LoT
+    hi::HiT
     order::OrderT
 end
 
@@ -107,7 +107,7 @@ function (integrator::MultiDimFixedGKIntegrator)(
         hi = integrator.hi;
         order = integrator.order
 ) where {F}
-    x = Array{Float64}(undef, length(lo))
+    x = Vector{float(promote_type(eltype(lo), eltype(hi)))}(undef, length(lo))
     function inner(idx)
         function integrate()
             return fixed_gk(inner(idx + 1), lo[idx + 1], hi[idx + 1], order[idx + 1])[1]

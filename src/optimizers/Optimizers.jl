@@ -75,10 +75,10 @@ Wraps an Optim.jl optimizer to optimize a single-dimensional domain function.
 
 $(SIGNATURES)
 """
-struct OneDimOptimOptimizer{OptimT <: Optim.AbstractOptimizer} <: Optimizer
-    lo::Float64
-    hi::Float64
-    initial::Float64
+struct OneDimOptimOptimizer{OptimT <: Optim.AbstractOptimizer, LoT, HiT, InitialT} <: Optimizer
+    lo::LoT
+    hi::HiT
+    initial::InitialT
     optim::OptimT
     opts::Optim.Options
 end
@@ -124,10 +124,10 @@ Wraps an Optim.jl optimizer to optimize a multi-dimensional domain function.
 
 $(SIGNATURES)
 """
-struct MultiDimOptimOptimizer{OptimT <: Optim.AbstractOptimizer} <: Optimizer
-    lo::Vector{Float64}
-    hi::Vector{Float64}
-    initial::Vector{Float64}
+struct MultiDimOptimOptimizer{OptimT <: Optim.AbstractOptimizer, LoT <: AbstractVector, HiT <: AbstractVector, InitialT <: AbstractVector} <: Optimizer
+    lo::LoT
+    hi::HiT
+    initial::InitialT
     optim::OptimT
     opts::Optim.Options
 end
