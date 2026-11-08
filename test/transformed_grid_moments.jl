@@ -72,6 +72,44 @@ end
     @test_throws ArgumentError weighted_grid_moments!(pair, [1.], [1.], (input, input))
 end
 
+@testset "centered reductions across vector lengths and layouts" begin
+    for T in (Float32, Float64), n in (33, 65, 129, 257), strided in (false, true)
+        offset = T == Float32 ? T(1e4) : T(1e12)
+        grid = offset .+ T.(-(n ÷ 2):(n ÷ 2))
+        weights = T[1 + mod(abs(i), 7) for i in -(n ÷ 2):(n ÷ 2)]
+        # Unsupported coordinates can be NaN, including inside SIMD-sized chunks.
+        for i in eachindex(grid)
+            if mod(abs(i - (n ÷ 2 + 1)), 11) == 0 || i in (1, n)
+                grid[i], weights[i] = T(NaN), zero(T)
+            end
+        end
+        if strided
+            grid = view(repeat(grid; inner=2), 1:2:2n)
+            weights = view(repeat(weights; inner=2), 1:2:2n)
+        end
+        buffers = ntuple(2) do _
+            strided ? view(zeros(T, 2n), 1:2:2n) : zeros(T, n)
+        end
+        seen = T[]
+        factors(x) = begin
+            push!(seen, x)
+            (one(T), isodd(round(Int, x - offset)) ? T(2) : zero(T))
+        end
+        for denominator in (nothing, T(4))
+            empty!(seen)
+            summaries = weighted_grid_moments!(factors, grid, weights, buffers; denominator)
+            @test seen == grid[findall(!iszero, weights)]
+            for (buffer, actual) in zip(buffers, summaries)
+                expected = weighted_grid_moments(BigFloat.(grid), BigFloat.(buffer);
+                    denominator=isnothing(denominator) ? nothing : BigFloat(denominator))
+                @test actual.mass ≈ expected.mass rtol=8eps(T)
+                @test actual.mean ≈ expected.mean rtol=8eps(T)
+                @test actual.variance ≈ expected.variance rtol=8eps(T)
+            end
+        end
+    end
+end
+
 function transformed_allocations(grid, weights, buffers)
     producer(x) = (exp(x), exp(-x))
     weighted_grid_moments!(producer, grid, weights, buffers)
