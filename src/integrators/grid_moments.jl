@@ -96,15 +96,16 @@ summaries[1] # (mass = 4.0, mean = 0.5, variance = 0.25)
 ```
 
 Each buffer stores `weights[i] * factors(grid[i])[k]` in its element type.
-`factors` supplies one factor per buffer, runs once per nonzero base weight,
-and must not mutate inputs or buffers.
+`factors` supplies one factor per buffer, runs once at every grid point in order
+(including zero base weights), and must not mutate inputs or buffers.
 
 All arrays must have equal, nonempty axes. Supply at least one buffer; buffers
 must not alias inputs or each other, including across concurrent calls. Factors,
 base and produced weights must be finite and nonnegative, each channel's mass positive
-and finite, and coordinates finite wherever produced weights are positive.
-These per-point numeric requirements are caller obligations. `@inbounds` also
-elides shape checks; aliasing, empty-input, mass and denominator checks remain.
+and finite, and all coordinates finite. These per-point numeric requirements are
+caller obligations. Use `skip_checks=true` to also assume the array and factor-count
+contracts; otherwise `@inbounds` elides shape checks only. Mass and denominator
+checks always remain.
 Buffers may be partially written on failure.
 
 Buffers retain produced weights for centered variance. The optional common
@@ -114,31 +115,27 @@ may reassociate floating-point additions.
 """
 Base.@propagate_inbounds function weighted_grid_moments!(factors::F, grid::AbstractVector,
         weights::AbstractVector, buffers::NTuple{N, AbstractVector};
-        denominator=nothing) where {F, N}
-    materialized_grid_moments!(factors, grid, weights, buffers; denominator)
+        denominator=nothing, skip_checks::Bool=false) where {F, N}
+    skip_checks || check_moment_buffers(grid, weights, buffers)
+    materialize_grid_weights!(factors, grid, weights, buffers, skip_checks)
+    map(buffers) do buffer
+        @inline
+        materialized_grid_channel_moments(grid, buffer; denominator)
+    end
 end
 
-Base.@propagate_inbounds function materialized_grid_moments!(factors::F, grid,
-        weights, buffers::NTuple{N, AbstractVector}; denominator=nothing) where {F, N}
-    check_moment_buffers(grid, weights, buffers)
-    materialize_grid_weights!(factors, grid, weights, buffers, Val(true))
-    map(buffer -> grid_moments(identity, grid, buffer, Val(false); denominator), buffers)
-end
-
-# Keep arbitrary callbacks ordered. Dense support removes the per-point branch
-# so the compiler can vectorize callbacks whose operations allow it.
+# Keep arbitrary callbacks ordered; an unconditional producer lets LLVM
+# vectorize callbacks whose operations allow it.
 Base.@propagate_inbounds function materialize_grid_weights!(factors::F, grid, weights,
-        buffers::NTuple{N, AbstractVector}, ::Val{SkipZeros}) where {F, N, SkipZeros}
+        buffers::NTuple{N, AbstractVector}, skip_checks::Bool) where {F, N}
     for i in eachindex(grid)
         base = @inbounds weights[i]
-        if SkipZeros && iszero(base)
-            foreach(buffer -> @inbounds(buffer[i] = zero(base)), buffers)
-        else
-            values = @inline factors(@inbounds grid[i])
+        values = @inline factors(@inbounds grid[i])
+        if !skip_checks
             @boundscheck length(values) == N || throw(DimensionMismatch("One factor is required per buffer"))
-            for k in 1:N
-                @inbounds buffers[k][i] = base * values[k]
-            end
+        end
+        for k in 1:N
+            @inbounds buffers[k][i] = base * values[k]
         end
     end
     nothing
@@ -163,46 +160,27 @@ end
 
 @inline function centered_grid_moment(grid::AbstractVector{T}, weights::AbstractVector{W},
         mean) where {T, W}
-    total = zero(promote_type(T, W))
+    total = zero(mean * float(@inbounds weights[first(eachindex(grid))]))
     @inbounds @simd for i in eachindex(grid)
         w = weights[i]
         # An unconditional addition lets LLVM recognize the reduction.
-        total += iszero(w) ? zero(total) : w * (grid[i] - mean)^2
+        total += w * (grid[i] - mean)^2
     end
     total
 end
 
 @inline function materialized_grid_channel_moments(grid::AbstractVector{T},
         weights::AbstractVector{W}; denominator=nothing) where {T, W}
-    first_positive = findfirst(!iszero, weights)
-    isnothing(first_positive) && throw(DomainError(weights, "Grid has zero mass"))
-    origin = @inbounds grid[first_positive]
-    mass = zero(W)
-    moment = zero(promote_type(T, W))
+    i = first(eachindex(grid))
+    origin = float(@inbounds grid[i])
+    mass = zero(float(@inbounds weights[i]))
+    moment = zero(mass * origin)
     @inbounds @simd for i in eachindex(grid)
         w = weights[i]
         mass += w
-        moment += iszero(w) ? zero(moment) : w * (grid[i] - origin)
+        moment += w * (grid[i] - origin)
     end
     mean, divisor = grid_moment_mean(mass, moment, origin, denominator)
     centered = centered_grid_moment(grid, weights, mean)
     (; mass, mean, variance=centered / divisor)
-end
-
-Base.@propagate_inbounds function weighted_grid_moments!(factors::F, grid::AbstractVector{T},
-        weights::AbstractVector, buffers::Tuple{AbstractVector{W}, Vararg{AbstractVector{W}, N}};
-        denominator=nothing) where {F, N, T <: AbstractFloat, W <: AbstractFloat}
-    if !isconcretetype(T) || !isconcretetype(W)
-        return materialized_grid_moments!(factors, grid, weights, buffers; denominator)
-    end
-    check_moment_buffers(grid, weights, buffers)
-    if all(!iszero, weights)
-        materialize_grid_weights!(factors, grid, weights, buffers, Val(false))
-    else
-        materialize_grid_weights!(factors, grid, weights, buffers, Val(true))
-    end
-    map(buffers) do buffer
-        @inline
-        materialized_grid_channel_moments(grid, buffer; denominator)
-    end
 end
