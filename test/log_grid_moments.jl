@@ -84,3 +84,16 @@ end
     scratch = (view(zeros(6),1:2:5),); weights = (view(zeros(6),2:2:6),)
     @test only(Integrators.weighted_log_grid_moments!(x -> (0.,),grid,logs,scratch,weights)).variance ≈ 2/3
 end
+
+@testset "log buffers define stored precision" begin
+    grid = [-1.,0.,1.]; logs = [-1000.1,-1000.2,-1000.3]
+    scratch = (zeros(Float32,3), zeros(3)); weights = (zeros(Float32,3),zeros(3))
+    summaries = Integrators.weighted_log_grid_moments!(x -> (x/3, x/3),grid,logs,scratch,weights)
+    for k in 1:2
+        reference = Integrators.weighted_grid_moments(grid, Integrators.LogGridWeights(scratch[k]))
+        @test summaries[k].log_scale == maximum(scratch[k])
+        @test summaries[k].scaled_sum ≈ sum(weights[k])
+        @test summaries[k].mean ≈ reference.mean rtol=32eps(eltype(scratch[k]))
+        @test summaries[k].variance ≈ reference.variance rtol=32eps(eltype(scratch[k]))
+    end
+end

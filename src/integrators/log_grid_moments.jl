@@ -48,7 +48,7 @@ Base.@propagate_inbounds function materialize_grid_logs!(factors::F, grid, logs,
             @boundscheck length(values) == N || throw(DimensionMismatch("One log factor is required per buffer"))
         end
         produced = map(ntuple(identity, Val(N))) do k
-            value = base + values[k]
+            value = convert(eltype(buffers[k]), base + values[k])
             @inbounds buffers[k][i] = value
             value
         end
@@ -66,7 +66,7 @@ end
     @inbounds @simd for i in eachindex(grid)
         delta = grid[i] - origin
         weights = map(logs, buffers, shifts) do log_values, buffer, shift
-            w = @inline exp(log_values[i] - shift)
+            w = convert(eltype(buffer), @inline exp(log_values[i] - shift))
             buffer[i] = w
             w
         end
