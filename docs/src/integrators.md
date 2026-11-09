@@ -71,11 +71,11 @@ summaries = weighted_grid_moments!(x -> (1 + x, 1 - x), grid, weights, buffers)
 summaries[1] # (mass = 4.0, mean = 0.5, variance = 0.25)
 ```
 
-Each buffer stores `weights[i] * factors(grid[i])[k]`. The callback runs once per
-nonzero base weight; centered variance reuses the buffers. The optional
+Each buffer stores `weights[i] * factors(grid[i])[k]`. The callback runs once at
+every grid point, including zero base weights; centered variance reuses the buffers. The optional
 `denominator` works as above.
 
 Use equally indexed, nonempty arrays and nonaliasing buffers. Weights and factors
-must be finite and nonnegative: these per-point requirements are caller
-obligations. `@inbounds` elides shape checks; aliasing and positive finite mass
-checks remain. See [`weighted_grid_moments!`](@ref PsychometricsBazaarBase.Integrators.weighted_grid_moments!) for the full contract.
+must be finite and nonnegative, and every coordinate finite. Use `skip_checks=true`
+when array shapes, nonaliasing and factor counts are guaranteed by the caller.
+Mass and denominator checks remain; `@inbounds` alone elides shape checks. See [`weighted_grid_moments!`](@ref PsychometricsBazaarBase.Integrators.weighted_grid_moments!) for the full contract.
