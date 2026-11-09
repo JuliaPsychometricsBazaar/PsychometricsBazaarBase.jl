@@ -118,10 +118,7 @@ Base.@propagate_inbounds function weighted_grid_moments!(factors::F, grid::Abstr
         denominator=nothing, skip_checks::Bool=false) where {F, N}
     skip_checks || check_moment_buffers(grid, weights, buffers)
     materialize_grid_weights!(factors, grid, weights, buffers, skip_checks)
-    map(buffers) do buffer
-        @inline
-        materialized_grid_channel_moments(grid, buffer; denominator)
-    end
+    materialized_grid_moments(grid, buffers; denominator)
 end
 
 # Keep arbitrary callbacks ordered; an unconditional producer lets LLVM
@@ -156,6 +153,48 @@ Base.@propagate_inbounds function check_moment_buffers(grid, weights, buffers::N
         end
     end
     nothing
+end
+
+# Pair channels to share grid loads without making the SIMD accumulator set
+# too large. Tuple recursion specializes away for a fixed number of channels.
+@inline function materialized_grid_moments(grid::AbstractVector,
+        buffers::Tuple{AbstractVector, AbstractVector, AbstractVector, Vararg{AbstractVector}};
+        denominator=nothing)
+    head = materialized_grid_moments(grid, (buffers[1], buffers[2]); denominator)
+    tail = materialized_grid_moments(grid, Base.tail(Base.tail(buffers)); denominator)
+    (head..., tail...)
+end
+
+@inline function materialized_grid_moments(grid::AbstractVector,
+        buffers::Tuple{AbstractVector}; denominator=nothing)
+    (materialized_grid_channel_moments(grid, only(buffers); denominator),)
+end
+
+# Each pair retains origin-centered means and mean-centered variances.
+@inline function materialized_grid_moments(grid::AbstractVector,
+        buffers::Tuple{AbstractVector, AbstractVector}; denominator=nothing)
+    first_index = first(eachindex(grid))
+    origin = float(@inbounds grid[first_index])
+    masses = map(buffer -> zero(float(@inbounds buffer[first_index])), buffers)
+    moments = map(mass -> zero(mass * origin), masses)
+    @inbounds @simd for i in eachindex(grid)
+        delta = grid[i] - origin
+        weights = map(buffer -> buffer[i], buffers)
+        masses = map(+, masses, weights)
+        moments = map((moment, weight) -> moment + weight * delta, moments, weights)
+    end
+    summaries = map((mass, moment) -> grid_moment_mean(mass, moment, origin, denominator),
+        masses, moments)
+    centered = map((summary, buffer) ->
+        zero(summary[1] * float(@inbounds buffer[first_index])), summaries, buffers)
+    @inbounds @simd for i in eachindex(grid)
+        x = grid[i]
+        weights = map(buffer -> buffer[i], buffers)
+        centered = map((total, weight, summary) -> total + weight * (x - summary[1])^2,
+            centered, weights, summaries)
+    end
+    map((mass, summary, total) -> (; mass, mean=summary[1], variance=total / summary[2]),
+        masses, summaries, centered)
 end
 
 @inline function centered_grid_moment(grid::AbstractVector{T}, weights::AbstractVector{W},
