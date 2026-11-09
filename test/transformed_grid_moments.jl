@@ -1,7 +1,7 @@
 using PsychometricsBazaarBase.Integrators
 
 @testset "transformed grid moment channels" begin
-    for T in (Float32, Float64, BigFloat), n in (1, 2, 3), skip_checks in (false, true)
+    for T in (Float32, Float64, BigFloat), n in (1, 2, 3, 5), skip_checks in (false, true)
         grid = T[-3, 1, 2]
         weights = T[1, 2, 4]
         factors(x) = ntuple(k -> exp(x / T(k)), n)
@@ -141,15 +141,17 @@ end
 end
 
 function transformed_allocations(grid, weights, buffers, skip_checks)
-    producer(x) = (exp(x), exp(-x))
+    producer(x) = ntuple(k -> exp(isodd(k) ? x : -x), Val(length(buffers)))
     weighted_grid_moments!(producer, grid, weights, buffers; skip_checks)
     @allocated weighted_grid_moments!(producer, grid, weights, buffers; skip_checks)
 end
 @testset "scalar moments reuse scratch" begin
-    for T in (Float32, Float64), n in (33, 65, 129), skip_checks in (false, true)
+    for T in (Float32, Float64), n in (33, 65, 129), channels in (1, 2, 3, 5),
+            skip_checks in (false, true)
         grid = collect(range(T(-4), T(4); length=n))
         weights = exp.(-grid.^2 / 2)
-        @test transformed_allocations(grid, weights, (similar(weights), similar(weights)), skip_checks) == 0
+        buffers = ntuple(_ -> similar(weights), channels)
+        @test transformed_allocations(grid, weights, buffers, skip_checks) == 0
     end
 end
 
@@ -235,4 +237,20 @@ end
                 factors, grid, weights, buffers; skip_checks, denominator)
         end
     end
+end
+
+@testset "mixed channel types share centered reductions" begin
+    grid = [1e8 - 2, 1e8, 1e8 + 3]
+    weights = [0., 2., 3.]
+    buffers = (zeros(Float32, 3), zeros(Float64, 3), zeros(BigFloat, 3))
+    summaries = weighted_grid_moments!(_ -> (1f0, 2., big"3"), grid, weights, buffers)
+    for (actual, buffer) in zip(summaries, buffers)
+        expected = weighted_grid_moments(BigFloat.(grid), BigFloat.(buffer))
+        @test actual.mass ≈ expected.mass
+        @test actual.mean ≈ expected.mean
+        @test actual.variance ≈ expected.variance
+    end
+    @test summaries[1].mass isa Float32
+    @test summaries[2].mass isa Float64
+    @test summaries[3].mass isa BigFloat
 end
