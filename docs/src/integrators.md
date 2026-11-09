@@ -79,3 +79,7 @@ Use equally indexed, nonempty arrays and nonaliasing buffers. Weights and factor
 must be finite and nonnegative, and every coordinate finite. Use `skip_checks=true`
 when array shapes, nonaliasing and factor counts are guaranteed by the caller.
 Mass and denominator checks remain; `@inbounds` alone elides shape checks. See [`weighted_grid_moments!`](@ref PsychometricsBazaarBase.Integrators.weighted_grid_moments!) for the full contract.
+
+```@docs
+PsychometricsBazaarBase.Integrators.weighted_log_grid_moments!
+```

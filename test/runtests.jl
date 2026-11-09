@@ -39,3 +39,7 @@ end
 @testset "transformed grid moments" begin
     include("./transformed_grid_moments.jl")
 end
+
+@testset "log_grid_moments" begin
+    include("./log_grid_moments.jl")
+end

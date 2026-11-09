@@ -185,14 +185,7 @@ end
     end
     summaries = map((mass, moment) -> grid_moment_mean(mass, moment, origin, denominator),
         masses, moments)
-    centered = map((summary, buffer) ->
-        zero(summary[1] * float(@inbounds buffer[first_index])), summaries, buffers)
-    @inbounds @simd for i in eachindex(grid)
-        x = grid[i]
-        weights = map(buffer -> buffer[i], buffers)
-        centered = map((total, weight, summary) -> total + weight * (x - summary[1])^2,
-            centered, weights, summaries)
-    end
+    centered = centered_grid_moments(grid, buffers, map(first, summaries))
     map((mass, summary, total) -> (; mass, mean=summary[1], variance=total / summary[2]),
         masses, summaries, centered)
 end
@@ -222,4 +215,16 @@ end
     mean, divisor = grid_moment_mean(mass, moment, origin, denominator)
     centered = centered_grid_moment(grid, weights, mean)
     (; mass, mean, variance=centered / divisor)
+end
+
+@inline function centered_grid_moments(grid, buffers::NTuple{N, AbstractVector}, means) where {N}
+    i = first(eachindex(grid))
+    centered = map((mean, buffer) -> zero(mean * float(@inbounds buffer[i])), means, buffers)
+    @inbounds @simd for i in eachindex(grid)
+        x = grid[i]
+        weights = map(buffer -> buffer[i], buffers)
+        centered = map((total, weight, mean) -> total + weight * (x - mean)^2,
+            centered, weights, means)
+    end
+    centered
 end
